@@ -30,6 +30,10 @@ void	Window::window_loading( void )
 		fprintf(stderr, "SDL CONTEXT ERROR  : %s", SDL_GetError());
 		exit(EXIT_FAILURE);
 	}
+	if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
+		std::cerr << "Failed to initialize GLAD" << std::endl;
+		exit(EXIT_FAILURE);
+	}
 }
 
 SDL_Window*	Window::getWinPtr(void)
