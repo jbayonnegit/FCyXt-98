@@ -1,15 +1,16 @@
 #pragma once
+#include "FCyXt.hpp"
 #include <string>
+
 class Shader
 {
 	private:
 
-		std::string	ShaderFragment;
-		std::string	ShaderVertex;
+		GLuint	ID;
 
 	public:
 	
-		Shader(std::string fragmentPath, std::string vertexPath);
+		Shader( std::string path );
 		Shader();
 		~Shader();
 };

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <fstream>
 #include <SDL2/SDL.h>
 #include <glad/glad.h>
 #include <GL/glu.h>
