@@ -6,7 +6,7 @@ LDFLAGS = -lSDL2 -lGL -lGLU -lglut
 OBJ_DIR = obj
 
 # Source files (manually listed, not wildcards)
-CPP_SOURCES = src/main.cpp src/Shader.cpp src/Window.cpp
+CPP_SOURCES = src/main.cpp src/VertexShader.cpp src/Window.cpp
 C_SOURCES = src/glad.c
 
 # Object files (automatically generated from sources)
