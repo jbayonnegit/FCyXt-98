@@ -1,12 +1,12 @@
 CC = g++
-CFLAGS = -Wall -Wextra -std=c++98 -Iinclude -Iglad/include
-LDFLAGS = -lSDL2 -lGL -lGLU -lglut
+CFLAGS = -Wall -Wextra -std=c++98 -Iinclude -Iglad/include -g3
+LDFLAGS = -lSDL2 -lGL -lGLU -lglut -ldl
 
 # Object directory
 OBJ_DIR = obj
 
 # Source files (manually listed, not wildcards)
-CPP_SOURCES = src/main.cpp src/VertexShader.cpp src/Window.cpp
+CPP_SOURCES = src/main.cpp src/VertexShader.cpp src/FragmentShader.cpp src/Window.cpp src/Fractal.cpp src/Program.cpp
 C_SOURCES = src/glad.c
 
 # Object files (automatically generated from sources)

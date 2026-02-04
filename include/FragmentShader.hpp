@@ -1,3 +1,4 @@
+#pragma once
 #include "FCyXt.hpp"
 #include "IShader.hpp"
 
@@ -5,7 +6,7 @@ class FragmentShader : public IShader
 {
 	private:
 
-		std::fstream 	_file;
+		std::string 	_file;
 		GLuint			_id;
 
 	public:

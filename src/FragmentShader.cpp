@@ -1,26 +1,26 @@
-#include "VertexShader.hpp" 
+#include "FragmentShader.hpp" 
 
-VertexShader::VertexShader(){}
+FragmentShader::FragmentShader(){}
 
-VertexShader::VertexShader( std::string path )
+FragmentShader::FragmentShader( std::string path )
 {
 	if ( !createShader( path ) )
-		std::cerr << "Failed in vertex shader constructor " << std::endl;
+		std::cerr << "Failed in fragment shader constructor " << std::endl;
 }
 
-VertexShader::~VertexShader(){}
+FragmentShader::~FragmentShader(){}
 
-const   GLuint  &VertexShader::getId( void ) const 
+const   GLuint  &FragmentShader::getId( void ) const 
 {
 	return ( _id );
 }
 
-void	VertexShader::deleteShader( void ) const
+void	FragmentShader::deleteShader( void ) const
 {
 	glDeleteShader( _id );
 }
 
-bool	VertexShader::compileShader( void ) const
+bool	FragmentShader::compileShader( void ) const
 {
 	char	infoLog[512];
 	int		success;
@@ -36,9 +36,9 @@ bool	VertexShader::compileShader( void ) const
 	return ( true );
 }
 
-bool	VertexShader::createShader(std::string path)
+bool	FragmentShader::createShader(std::string path)
 {
-	std::stringstream		buffer;
+	std::stringstream       buffer;
 	std::ifstream			file;
 	const char				*str;
 
@@ -46,13 +46,13 @@ bool	VertexShader::createShader(std::string path)
 	if (!file.good())
 	{
 		std::cout << "File failed" << std::endl;
-		return ( false );
+		return false;
 	}
 	buffer << file.rdbuf();
 	file.close();
 	_file = buffer.str();
 	str = _file.c_str();
-	_id = glCreateShader( GL_VERTEX_SHADER );
+	_id = glCreateShader( GL_FRAGMENT_SHADER );
 	glShaderSource( _id, 1, &str, NULL);
 	return true;
 }

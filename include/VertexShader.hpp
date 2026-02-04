@@ -1,13 +1,13 @@
+#pragma once 
 #include "FCyXt.hpp"
-#include <sstream>
 #include "IShader.hpp"
 
 class VertexShader : public IShader
 {
 	private:
 
-		std::fstream 	file;
-		GLuint			id;
+		std::string 	_file;
+		GLuint			_id;
 
 	public:
 	
