@@ -12,7 +12,7 @@ int	main(void)
 	bool running = true;
 	SDL_Event		e;
 
-	float z;
+	double z;
 
 	fractal.makeMesh();
 	vertexShader.compileShader();
@@ -44,12 +44,10 @@ int	main(void)
 
     std::cout << "-----------------" << std::endl;
 
-
-
 	z = 1;
-	float			osX = 0;
+	double			osX = 0;
 	int			f = 1;
-	float			osY = 0;
+	double			osY = 0;
 	while ( running )
 	{
 		
@@ -59,7 +57,7 @@ int	main(void)
 		GLuint offsetX  = glGetUniformLocation( program.getId(), "offsetX");
 		GLuint offsetY  = glGetUniformLocation( program.getId(), "offsetY");
 		GLuint limit  = glGetUniformLocation( program.getId(), "limit");
-		glUniform2f(u_resolution, WIDTH, HEIGHT);
+		glUniform2d(u_resolution, WIDTH, HEIGHT);
 
 		while ( SDL_PollEvent(&e) )
 		{
@@ -93,9 +91,9 @@ int	main(void)
 		}
 
 		glUniform1i(limit, f);
-		glUniform1f(zoom, z);
-		glUniform1f(offsetX, osX);
-		glUniform1f(offsetY, osY);
+		glUniform1d(zoom, z);
+		glUniform1d(offsetX, osX);
+		glUniform1d(offsetY, osY);
 		
 		fractal.drawShape( win );
 		SDL_Delay(20);
