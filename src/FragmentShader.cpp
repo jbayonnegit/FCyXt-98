@@ -30,7 +30,7 @@ bool	FragmentShader::compileShader( void ) const
 	if(!success)
 	{
 	    glGetShaderInfoLog(_id, 512, NULL, infoLog);
-	    std::cerr << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
+	    std::cerr << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
 		return ( false );
 	}
 	return ( true );

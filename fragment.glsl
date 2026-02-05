@@ -1,6 +1,15 @@
 #version 330 core
 	out vec4 FragColor;
 	uniform vec2 u_resolution;
+	uniform float zoom;
+	uniform float offsetX;
+	uniform float offsetY;
+
+	struct	complex{
+
+		float r;
+		float i;
+	};
 
 	float	convert_range(float v, float max_src, float min_dst, float max_dst)
 	{
@@ -16,20 +25,11 @@
 		if ((gl_FragCoord.x >= (u - 0.5f) && gl_FragCoord.x <= (u + 0.5f))
 		&& (gl_FragCoord.y >= (k - 0.5f) && gl_FragCoord.y <= (k + 0.5f)))
 			FragColor = vec4(limit, 0.0f ,0.0f,1.0f);
-		//else
-		//	FragColor = vec4(0.0f, 0.0f ,0.0f,1.0f);
 	}
 
-	struct	complex{
-
-		float r;
-		float i;
-	};
-
-
-	struct complex add_complex(struct complex c1, struct complex c2)
+	complex add_complex(complex c1, complex c2)
 	{
-		struct complex result;
+		complex result;
 
 		result.r = c1.r + c2.r;
 		result.i = c1.i + c2.i;
@@ -37,31 +37,26 @@
 		return result;
 	}
 
-	struct complex sqr_complex(struct complex c)
+	complex sqr_complex(complex c)
 	{
-		struct complex result;
-
+		complex result;
 		result.r = pow(c.r, 2) - pow(c.i, 2);
 		result.i = 2 * c.r * c.i;
-
 		return result;
 	}
 
 	void main()
 	{
-		float x = convert_range(gl_FragCoord.x, u_resolution.x, -2, 1);
-		float y = convert_range(gl_FragCoord.y, u_resolution.y, 1.5, -1.5);
-
-		struct complex c;
-		struct complex z;
+		float x = convert_range((gl_FragCoord.x + offsetX) * zoom , u_resolution.x, -2 * 1.77777777778, 2 * 1.77777777778);
+		float y = convert_range((gl_FragCoord.y + offsetY) * zoom , u_resolution.y, -2, 2);
+		complex c;
+		complex z;
 		float	limit = 0;
-
-		c.r = x;
-		c.i = y;
-		z.r = c.r;
-		z.i = c.i;
-
-		while ( limit < 300)
+		c.r = 0.4;
+		c.i = 0.35;
+		z.r = x;
+		z.i = y;
+		while ( limit < 200 )
 		{
 			z = add_complex(sqr_complex( z ), c);
 			if ( (z.r * z.r) + (z.i * z.i) > 4 )
@@ -71,5 +66,5 @@
 			}
 			limit += 1;			
 		}
-
-	};
+		FragColor = vec4(0.0f, 0.0f ,0.0f,1.0f);
+	}

@@ -1,6 +1,6 @@
 CC = g++
-CFLAGS = -Wall -Wextra -std=c++98 -Iinclude -Iglad/include -g3
-LDFLAGS = -lSDL2 -lGL -lGLU -lglut -ldl
+CFLAGS = -Wall -Wextra -std=c++98 -Iinclude -Iglad/include  -g3
+LDFLAGS = -lSDL2 -lGL -lGLU -lglut -ldl -fsanitize=address
 
 # Object directory
 OBJ_DIR = obj
