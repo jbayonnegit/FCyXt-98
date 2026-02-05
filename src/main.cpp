@@ -48,6 +48,7 @@ int	main(void)
 	double			osX = 0;
 	int			f = 1;
 	double			osY = 0;
+	double			c = 0;
 	while ( running )
 	{
 		
@@ -57,6 +58,7 @@ int	main(void)
 		GLuint offsetX  = glGetUniformLocation( program.getId(), "offsetX");
 		GLuint offsetY  = glGetUniformLocation( program.getId(), "offsetY");
 		GLuint limit  = glGetUniformLocation( program.getId(), "limit");
+		GLuint cr  = glGetUniformLocation( program.getId(), "cr");
 		glUniform2d(u_resolution, WIDTH, HEIGHT);
 
 		while ( SDL_PollEvent(&e) )
@@ -89,9 +91,10 @@ int	main(void)
 				}	
 			}
 		}
-
+		c += 0.0001;
 		glUniform1i(limit, f);
 		glUniform1d(zoom, z);
+		glUniform1d(cr, c);
 		glUniform1d(offsetX, osX);
 		glUniform1d(offsetY, osY);
 		

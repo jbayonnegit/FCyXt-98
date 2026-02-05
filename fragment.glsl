@@ -6,6 +6,7 @@
 	uniform double zoom;
 	uniform int limit;
 	uniform double offsetX;
+	uniform double cr;
 	uniform double offsetY;
 
 	struct    complex{
@@ -76,8 +77,8 @@
 		complex c;
 		complex z;
 		int    it = 0;
-		c.r = x;
-		c.i = y;
+		c.r =  0.285;
+		c.i = 0.01;
 		z.r = x;
 		z.i = y;
 		while ( it < limit )
