@@ -62,6 +62,7 @@ int	main(void)
 				}
 				osX = mouseWorldXBefore - (mouseX * z);
   				osY = mouseWorldYBefore - (mouseY * z);
+				std::cout << "  osx: " << osX << " osy : " << osY << std::endl;
 			}
 		}
 
@@ -69,7 +70,7 @@ int	main(void)
 		glUniform1f(offsetY, osY);
 		
 		fractal.drawShape( win );
-		SDL_Delay(20);
+		SDL_Delay(2000);
  	}
 
 	return (0);
