@@ -12,7 +12,7 @@ int	main(void)
 	bool running = true;
 	SDL_Event		e;
 
-	float z;
+	double z;
 
 	fractal.makeMesh();
 	vertexShader.compileShader();
@@ -22,8 +22,11 @@ int	main(void)
 	fragmentShader.deleteShader();
 	program.use();
 
-	z = 1;
 
+	z = 1;
+	double			osX = 0;
+	double			f = 1;
+	double			osY = 0;
 	while ( running )
 	{
 		
@@ -32,10 +35,9 @@ int	main(void)
 		GLuint zoom  = glGetUniformLocation( program.getId(), "zoom");
 		GLuint offsetX  = glGetUniformLocation( program.getId(), "offsetX");
 		GLuint offsetY  = glGetUniformLocation( program.getId(), "offsetY");
+		GLuint focus  = glGetUniformLocation( program.getId(), "focus");
 		glUniform2f(u_resolution, WIDTH, HEIGHT);
-		glUniform1f(zoom, z);
-		float			osX = 0;
-		float			osY = 0;
+
 		while ( SDL_PollEvent(&e) )
 		{
 			if ( SDL_QUIT == e.type )
@@ -50,27 +52,31 @@ int	main(void)
 				mouseY *= -1;
 				std::cout << " mouse x: " << mouseX << " mouse Y : " << mouseY << std::endl;
 
-				float mouseWorldXBefore = osX + (mouseX * z);
-   				float mouseWorldYBefore = osY + (mouseY * z);
+				double mouseWorldXBefore = osX + (mouseX * z);
+   				double mouseWorldYBefore = osY + (mouseY * z);
 				if (e.wheel.y < 0)
 				{
 					z *= 1.05; // Zoom in
+					f -= 0.008; 
 				}
 				else if (e.wheel.y > 0)
 				{
 					z *= 0.95; // Zoom out
+					f += 0.008; 
 				}
 				osX = mouseWorldXBefore - (mouseX * z);
   				osY = mouseWorldYBefore - (mouseY * z);
-				std::cout << "  osx: " << osX << " osy : " << osY << std::endl;
 			}
+			std::cout << "  osx: " << osX << " osy : " << osY  << "z :" << z << std::endl;
 		}
 
+		glUniform1f(focus, f);
+		glUniform1f(zoom, z);
 		glUniform1f(offsetX, osX);
 		glUniform1f(offsetY, osY);
 		
 		fractal.drawShape( win );
-		SDL_Delay(2000);
+		SDL_Delay(20);
  	}
 
 	return (0);

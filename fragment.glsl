@@ -2,6 +2,7 @@
 	out vec4 FragColor;
 	uniform vec2 u_resolution;
 	uniform float zoom;
+	uniform float focus;
 	uniform float offsetX;
 	uniform float offsetY;
 
@@ -47,21 +48,21 @@
 
 	void main()
 	{
-		float x = convert_range((gl_FragCoord.x + offsetX) * zoom , u_resolution.x, -2 * 1.77777777778, 2 * 1.77777777778);
-		float y = convert_range((gl_FragCoord.y + offsetY) * zoom , u_resolution.y, -2, 2);
+		float x = convert_range(gl_FragCoord.x * zoom + offsetX, u_resolution.x, -2 * 1.77777777778, 2 * 1.77777777778);
+		float y = convert_range(gl_FragCoord.y * zoom + offsetY, u_resolution.y, -2, 2);
 		complex c;
 		complex z;
 		float	limit = 0;
-		c.r = 0.4;
-		c.i = 0.35;
+		c.r = x;
+		c.i = y;
 		z.r = x;
 		z.i = y;
-		while ( limit < 200 )
+		while ( limit < 100000 )
 		{
 			z = add_complex(sqr_complex( z ), c);
 			if ( (z.r * z.r) + (z.i * z.i) > 4 )
 			{
-				display_pixel(gl_FragCoord.x, gl_FragCoord.y, convert_range(limit, 20, 0, 1));
+				display_pixel(gl_FragCoord.x , gl_FragCoord.y , convert_range(limit, 20, 0, 1));
 				return ;
 			}
 			limit += 1;			
