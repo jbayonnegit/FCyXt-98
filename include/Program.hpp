@@ -11,9 +11,11 @@ class Program {
 
 	private :
 
-		GLuint _id;
 		VertexShader	*_vertexShader;
 	    FragmentShader	*_mandelbrot;
+		GLuint 			_id;
+
+		char			_pad[4];
 
 	public :
 

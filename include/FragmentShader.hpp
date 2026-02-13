@@ -16,6 +16,8 @@ class FragmentShader : public IShader
 		std::string 	_file;
 		GLuint			_id;
 
+		char			_pad[4];
+
 	public:
 	
 		FragmentShader();

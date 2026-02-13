@@ -3,8 +3,8 @@ CXX = g++
 
 FLAGS_OPTIMISATION = -O3 -flto
 FLAGS_SANITIZE = -fsanitize=address,undefined,leak
-FLAGS_WARN = -Wall -Wextra -Wpadded
-#FLAGS_WARN = -Wall -Wextra -Wpadded -Weffc++
+#FLAGS_WARN = -Wall -Wextra -Wpadded
+FLAGS_WARN = -Wall -Wextra -Wpadded -Weffc++
 
 CFLAGS = $(FLAGS_WARN) $(FLAGS_OPTIMISATION) $(FLAGS_SANITIZE) -Iinclude
 CXXFLAGS = $(FLAGS_WARN) -std=c++98 -pedantic $(FLAGS_OPTIMISATION) $(FLAGS_SANITIZE) -Iinclude
