@@ -1,15 +1,17 @@
 #include "Program.hpp"
-#include "VertexShader.hpp"
-#include "FragmentShader.hpp"
-#include <iostream>
-#include <cstddef>
 
 Program::Program( void )
 {
+	_vertexShader = new VertexShader("VertexShader.hpp");
+	_mandelbrot = new FragmentShader("fragment.glsl");
 	_id = glCreateProgram();
 }
 
-Program::~Program(){}
+Program::~Program()
+{
+	delete (_vertexShader);
+	delete (_mandelbrot);
+}
 
 bool    Program::attachLinkShader( VertexShader &vertex, FragmentShader &fragment )
 {
@@ -32,6 +34,20 @@ bool    Program::attachLinkShader( VertexShader &vertex, FragmentShader &fragmen
 void	Program::use( void )
 {
 	glUseProgram( _id );
+}
+
+bool	Program::runProgram( const std::string name )
+{
+	if ( "Mandelbrot" == name )
+	{
+		_vertexShader->compileShader();
+		_mandelbrot->compileShader();
+		attachLinkShader( *_vertexShader, *_mandelbrot );
+		_vertexShader->deleteShader();
+		_mandelbrot->deleteShader();
+	}
+	use();
+	return true;
 }
 
 GLuint	&Program::getId( void )

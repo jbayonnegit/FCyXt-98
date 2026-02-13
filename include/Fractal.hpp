@@ -1,8 +1,10 @@
-#pragma once
-#include <glad/glad.h>
+#ifndef FRACTAL_HPP
+# define FRACTAL_HPP
 
-// Forward declaration
-class Window;
+# include <SDL2/SDL.h> // SDL_X
+# include <glad.h> // gl_X
+
+# include "Window.hpp"
 
 class Fractal {
 
@@ -17,4 +19,7 @@ class Fractal {
         ~Fractal();
         void    makeMesh( void );
         void    drawShape( Window &win );
+
 };
+
+#endif

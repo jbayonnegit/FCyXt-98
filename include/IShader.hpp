@@ -1,6 +1,7 @@
-#pragma once
-#include "FCyXt.hpp"
-#include <string>
+#ifndef ISHADER_HPP 
+# define ISHADER_HPP 
+
+# include <string> // std::string
 
 class IShader
 {
@@ -11,5 +12,6 @@ class IShader
 		virtual bool	compileShader( void )	const = 0;
 		virtual	const GLuint &getId( void )		const = 0;
 		virtual void	deleteShader( void )	const = 0;
-	
+
 };
+#endif

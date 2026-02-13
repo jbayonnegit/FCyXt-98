@@ -1,6 +1,4 @@
 #include "Fractal.hpp"
-#include "Window.hpp"
-#include <SDL2/SDL.h>
 
 Fractal::Fractal(){}
 

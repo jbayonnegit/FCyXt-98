@@ -1,42 +1,52 @@
-CC = g++
-CFLAGS = -Wall -Wextra -std=c++98 -Iinclude -Iglad/include  -g3
-LDFLAGS = -lSDL2 -lGL -lGLU -lglut -ldl -fsanitize=address
+CC = gcc
+CXX = g++
+
+FLAGS_OPTIMISATION = -O3 -flto
+FLAGS_SANITIZE = -fsanitize=address,undefined,leak
+FLAGS_WARN = -Wall -Wextra -Wpadded
+#FLAGS_WARN = -Wall -Wextra -Wpadded -Weffc++
+
+CFLAGS = $(FLAGS_WARN) $(FLAGS_OPTIMISATION) $(FLAGS_SANITIZE) -Iinclude
+CXXFLAGS = $(FLAGS_WARN) -std=c++98 -pedantic $(FLAGS_OPTIMISATION) $(FLAGS_SANITIZE) -Iinclude
+
+LDFLAGS = -lSDL2 -lGL -lGLU -lglut -ldl $(FLAGS_OPTIMISATION) $(FLAGS_SANITIZE)
 
 # Object directory
 OBJ_DIR = obj
 
-# Source files (manually listed, not wildcards)
-CPP_SOURCES = src/main.cpp src/VertexShader.cpp src/FragmentShader.cpp src/Window.cpp src/Fractal.cpp src/Program.cpp
+# Source files
+CPP_SOURCES = src/main.cpp src/VertexShader.cpp src/FragmentShader.cpp src/Window.cpp src/Fractal.cpp src/Program.cpp src/App.cpp
 C_SOURCES = src/glad.c
 
-# Object files (automatically generated from sources)
+# Object files
 CPP_OBJ = $(addprefix $(OBJ_DIR)/, $(notdir $(CPP_SOURCES:.cpp=.o)))
 C_OBJ = $(addprefix $(OBJ_DIR)/, $(notdir $(C_SOURCES:.c=.o)))
 OBJ_FILES = $(CPP_OBJ) $(C_OBJ)
+DEP_FILES = $(OBJ_FILES:.o=.d)
 
 # Target executable
-TARGET = FCyXt-98
+TARGET = Raymarching
 
 # Default target
-all: $(OBJ_DIR) $(TARGET)
+all: $(TARGET)
 
-# Create obj directory if it doesn't exist
+# Create obj directory
 $(OBJ_DIR):
 	mkdir -p $(OBJ_DIR)
 
-# Link object files to create executable
+# Link object files
 $(TARGET): $(OBJ_FILES)
-	$(CC) $(OBJ_FILES) -o $(TARGET) $(LDFLAGS)
+	$(CXX) $(OBJ_FILES) -o $(TARGET) $(LDFLAGS)
 
-# Compile C++ files to obj directory
-$(OBJ_DIR)/%.o: src/%.cpp
-	$(CC) $(CFLAGS) -c $< -o $@
+# Compile C++ files
+$(OBJ_DIR)/%.o: src/%.cpp | $(OBJ_DIR)
+	$(CXX) $(CXXFLAGS) -MMD -MP -MF $(@:.o=.d) -c $< -o $@
 
-# Compile C files to obj directory
-$(OBJ_DIR)/%.o: src/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
+# Compile C files
+$(OBJ_DIR)/%.o: src/%.c | $(OBJ_DIR)
+	$(CC) $(CFLAGS) -MMD -MP -MF $(@:.o=.d) -c $< -o $@
 
-# Clean build artifacts
+# Clean
 clean:
 	rm -rf $(OBJ_DIR)
 
@@ -45,5 +55,7 @@ fclean: clean
 
 re: fclean all
 
-# Phony targets
+# Include dependencies only if they exist
+-include $(DEP_FILES)
+
 .PHONY: all clean fclean re
