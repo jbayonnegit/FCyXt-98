@@ -11,8 +11,9 @@ class Program {
 
 	private :
 
-		VertexShader	*_vertexShader;
-	    FragmentShader	*_mandelbrot;
+		VertexShader	_vertexShader;
+	    FragmentShader	_mandelbrot;
+	    FragmentShader	_circle;
 		GLuint 			_id;
 
 		char			_pad[4];

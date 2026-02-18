@@ -2,15 +2,15 @@
 
 Program::Program( void )
 {
-	_vertexShader = new VertexShader("VertexShader.hpp");
-	_mandelbrot = new FragmentShader("fragment.glsl");
+	_vertexShader.createShader("vertex.glsl");
+	_mandelbrot.createShader("fragment.glsl");
+	_circle.createShader("Circle.glsl");
 	_id = glCreateProgram();
 }
 
 Program::~Program()
 {
-	delete (_vertexShader);
-	delete (_mandelbrot);
+
 }
 
 bool    Program::attachLinkShader( VertexShader &vertex, FragmentShader &fragment )
@@ -40,11 +40,19 @@ bool	Program::runProgram( const std::string name )
 {
 	if ( "Mandelbrot" == name )
 	{
-		_vertexShader->compileShader();
-		_mandelbrot->compileShader();
-		attachLinkShader( *_vertexShader, *_mandelbrot );
-		_vertexShader->deleteShader();
-		_mandelbrot->deleteShader();
+		_vertexShader.compileShader();
+		_mandelbrot.compileShader();
+		attachLinkShader( _vertexShader, _mandelbrot );
+		_vertexShader.deleteShader();
+		_mandelbrot.deleteShader();
+	}
+	if ( "Circle" == name )
+	{
+		_vertexShader.compileShader();
+		_circle.compileShader();
+		attachLinkShader( _vertexShader, _circle );
+		_vertexShader.deleteShader();
+		_circle.deleteShader();
 	}
 	use();
 	return true;

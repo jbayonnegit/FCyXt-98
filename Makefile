@@ -15,7 +15,7 @@ LDFLAGS = -lSDL2 -lGL -lGLU -lglut -ldl $(FLAGS_OPTIMISATION) $(FLAGS_SANITIZE)
 OBJ_DIR = obj
 
 # Source files
-CPP_SOURCES = src/main.cpp src/VertexShader.cpp src/FragmentShader.cpp src/Window.cpp src/Fractal.cpp src/Program.cpp src/App.cpp
+CPP_SOURCES = src/main.cpp src/VertexShader.cpp src/FragmentShader.cpp src/Window.cpp src/Fractal.cpp src/Program.cpp src/App.cpp src/Vec3.cpp src/Camera.cpp
 C_SOURCES = src/glad.c
 
 # Object files

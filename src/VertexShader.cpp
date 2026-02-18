@@ -45,7 +45,7 @@ bool	VertexShader::createShader(std::string path)
 	file.open( path.c_str() );
 	if (!file.good())
 	{
-		std::cout << "File failed" << std::endl;
+		std::cout << "File failedd" << std::endl;
 		return ( false );
 	}
 	buffer << file.rdbuf();

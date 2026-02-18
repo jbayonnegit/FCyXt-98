@@ -8,6 +8,7 @@
 # include "Fractal.hpp"
 # include "Window.hpp"
 # include "Program.hpp"
+# include "Camera.hpp"
 
 class App
 {
@@ -18,6 +19,7 @@ class App
 		Window			_win;
 		Program         _program;
 		bool			runMandelbrot();
+		bool			runCircle();
 
 
 	public :

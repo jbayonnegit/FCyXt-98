@@ -1,7 +1,6 @@
 #include "App.hpp"
 
 
-
 App::App()
 {
 
@@ -17,18 +16,7 @@ App::App( const std::string name) : _name ( name )
 
 bool	App::run( void )
 {
-	if ( "Mandelbrot" == _name )
-		runMandelbrot();
-	return true;
-}
-
-bool	App::runMandelbrot( void )
-{
-	bool running = true;
-	SDL_Event		e;
-	double z;
-
-    const unsigned char* version = glGetString(GL_VERSION);
+	const unsigned char* version = glGetString(GL_VERSION);
     const unsigned char* glslVersion = glGetString(GL_SHADING_LANGUAGE_VERSION);
     const unsigned char* vendor = glGetString(GL_VENDOR);
     const unsigned char* renderer = glGetString(GL_RENDERER);
@@ -38,6 +26,19 @@ bool	App::runMandelbrot( void )
     std::cout << "Version OpenGL : " << version << std::endl;
     std::cout << "Version GLSL : " << glslVersion << std::endl;
     std::cout << "-----------------" << std::endl;
+
+	if ( "Mandelbrot" == _name )
+		runMandelbrot();
+	else if ( "Circle" == _name )
+		runCircle();
+	return true;
+}
+
+bool	App::runMandelbrot( void )
+{
+	bool running = true;
+	SDL_Event		e;
+	double z;
 	z = 1;
 	double			osX = 0;
 	int			f = 1;
@@ -83,15 +84,47 @@ bool	App::runMandelbrot( void )
 			}
 		}
 		c += 0.0001;
-		glUniform1i(limit, f);
-		glUniform1d(zoom, z);
-		glUniform1d(cr, c);
-		glUniform1d(offsetX, osX);
-		glUniform1d(offsetY, osY);
+		glUniform1i( limit, f );
+		glUniform1d( zoom, z );
+		glUniform1d( cr, c );
+		glUniform1d( offsetX, osX );
+		glUniform1d( offsetY, osY );
 		_fractal.drawShape( _win );
-		SDL_Delay(20);
+		SDL_Delay( 20 );
  	}
 	return true;
+}
+
+bool	App::runCircle(void)
+{
+	bool running = true;
+	SDL_Event		e;
+
+
+	Camera	camera;
+
+	while (running)
+	{
+
+		GLuint cam_pos	= glGetUniformLocation( _program.getId(), "cam_pos" );
+		GLuint cam_dir	= glGetUniformLocation( _program.getId(), "cam_direction" );
+		GLuint right	= glGetUniformLocation( _program.getId(), "right" );
+		GLuint up		= glGetUniformLocation( _program.getId(), "up" );
+		
+		glUniform3d( cam_pos, camera.position._x , camera.position._y , camera.position._z );
+		glUniform3d( cam_dir, camera.front._x , camera.front._y , camera.front._z );
+		glUniform3d( up , camera.up._x, camera.up._y , camera.up._z);
+		glUniform3d( right , camera.right._x, camera.right._y , camera.right._z );
+
+		while ( SDL_PollEvent(&e) )
+		{
+			if ( SDL_QUIT == e.type )
+				running = false;
+		}
+		_fractal.drawShape( _win );
+		SDL_Delay( 20 );
+	}
+	return ( true );
 }
 
 App::~App()
