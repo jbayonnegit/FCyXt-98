@@ -50,6 +50,28 @@ Vec3 &Vec3::operator-(const Vec3 &other)
 	return (*this);
 }
 
+Vec3 &Vec3::operator*(const Vec3 &other)
+{
+	if (this != &other)
+	{
+		_x *= other._x;
+		_y *= other._y;
+		_z *= other._z;
+	}
+	return (*this);
+}
+
+Vec3 &Vec3::operator/(const Vec3 &other)
+{
+	if (this != &other)
+	{
+		_x /= other._x;
+		_y /= other._y;
+		_z /= other._z;
+	}
+	return (*this);
+}
+
 Vec3::~Vec3()
 {
 
@@ -64,4 +86,10 @@ void	Vec3::normalize( void )
 	_x /= norme;
 	_y /= norme;
 	_z /= norme;
+}
+
+std::ostream	&operator<<( std::ostream &stream, Vec3 &vec)
+{
+		stream << "x : " << vec._x << " y: " <<  vec._y << " z: "  <<  vec._z;
+		return ( stream );
 }

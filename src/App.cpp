@@ -101,20 +101,24 @@ bool	App::runCircle(void)
 	SDL_Event		e;
 
 
-	Camera	camera;
+	Camera	camera(1.45,-30,0);
 
 	while (running)
 	{
 
 		GLuint cam_pos	= glGetUniformLocation( _program.getId(), "cam_pos" );
-		GLuint cam_dir	= glGetUniformLocation( _program.getId(), "cam_direction" );
+		GLuint cam_dir	= glGetUniformLocation( _program.getId(), "forward" );
 		GLuint right	= glGetUniformLocation( _program.getId(), "right" );
 		GLuint up		= glGetUniformLocation( _program.getId(), "up" );
+		GLuint ViewportResolution	= glGetUniformLocation( _program.getId(), "resolution" );
+		GLuint ScreenResolution	= glGetUniformLocation( _program.getId(), "ScreenResolution" );
 		
 		glUniform3d( cam_pos, camera.position._x , camera.position._y , camera.position._z );
 		glUniform3d( cam_dir, camera.front._x , camera.front._y , camera.front._z );
 		glUniform3d( up , camera.up._x, camera.up._y , camera.up._z);
 		glUniform3d( right , camera.right._x, camera.right._y , camera.right._z );
+		glUniform2d( ViewportResolution, camera.w, camera.h);
+		glUniform2d( ScreenResolution, WIDTH, HEIGHT);
 
 		while ( SDL_PollEvent(&e) )
 		{

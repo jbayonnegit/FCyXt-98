@@ -1,4 +1,5 @@
 #include <cmath> //pow sqrt
+#include <iostream> //cout
 
 class Vec3
 {
@@ -10,7 +11,9 @@ class Vec3
 		Vec3 &operator=(const Vec3 &other);
 		Vec3 &operator+(const Vec3 &other);
 		Vec3 &operator-(const Vec3 &other);
-	
+		Vec3 &operator*(const Vec3 &other);
+		Vec3 &operator/(const Vec3 &other);
+
 		~Vec3();
 
 		static double	dot( const Vec3 &a, const Vec3 &b )
@@ -32,4 +35,5 @@ class Vec3
 
 		void	normalize( void );
 };
+std::ostream	&operator<<( std::ostream &stream, Vec3 &vec);
  

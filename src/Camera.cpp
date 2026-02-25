@@ -1,6 +1,6 @@
 #include "Camera.hpp"
 
-Camera::Camera() : position(0, 0, 0), front(1, 0, 0), fov(70)
+Camera::Camera() : position(0, 0, 0), front(0, 1, 0), fov(70)
 {
 	h = 2 * tan( fov / 2 * (M_PI * 180 ));
 	w = h * ( (double) WIDTH / (double) HEIGHT );
@@ -12,7 +12,8 @@ Vec3	Camera::get_up_local_vector( void )
 {
 	Vec3	up;
 
-	up = Vec3::cross( front, right );
+	up = Vec3::cross( right, front );
+
 	up.normalize();
 	return ( up );
 }
@@ -31,9 +32,17 @@ Vec3	Camera::get_right_local_vector( void )
 }
 
 
-Camera::Camera( double x, double y, double z ) : position( x, y, z ), front( 1, 0, 0 ), fov( 70 )
+Camera::Camera( double x, double y, double z ) : position( x, y, z ), front( 0, 1, 0 ), fov( 70 )
 {
-
+	h = 2 * tan( fov / 2 * (M_PI / 180 ));
+	w = h * ( (double) WIDTH / (double) HEIGHT );
+	right = get_right_local_vector();
+	up = get_up_local_vector();
+	std::cout << " right : " << right << std::endl;
+	std::cout << " up : " << up << std::endl;
+	std::cout << " front : " << front << std::endl;
+	std::cout << " cam_pos : " << position << std::endl;
+	std::cout << "[ ViewportResolution ] w : " << w << " h : " << h << std::endl; 
 }
 
 Camera::~Camera()
