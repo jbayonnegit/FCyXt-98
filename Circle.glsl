@@ -57,8 +57,8 @@ double sdBox( dvec3 p, dvec3 b )
 
 double	mapScene(dvec3 p)
 {
-	double	sphere = SdSphere(p ,2);
-	double	box = sdBox(p, dvec3(1,1,1));
+	double	sphere = SdSphere(p ,7);
+	double	box = sdBox(p, dvec3(6,6,6));
 	return (min(sphere, box));
 }
 
@@ -85,7 +85,7 @@ void main ()
 
 	ray = get_first_ray_direction();
 	d = mapScene(point);
-	while (d > 0.001)
+	while (d > 1)
 	{
 		d = mapScene(point);
 		point += d * ray;
@@ -94,7 +94,7 @@ void main ()
 	}
 	n = getNormal(point);
 	light_angle = dot( n, normalize(dvec3(-100, -100, -200) - point ));
-	if (d <= 0.001)
+	if (d <= 1)
 		FragColor = vec4(1.0 * light_angle, 0, 0, 1);
 	else
 		FragColor = vec4(0, 0.002, 0, 1);

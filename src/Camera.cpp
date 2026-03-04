@@ -1,7 +1,9 @@
 #include "Camera.hpp"
 
-Camera::Camera() : position(0, 0, 0), front(0, 1, 0), fov(70)
+Camera::Camera() : position(0, 0, 0), front(1, 0, 0), fov(70)
 {
+	midIsPress = false;
+	shiftIsPress = false; 
 	h = 2 * tan( fov / 2 * (M_PI * 180 ));
 	w = h * ( (double) WIDTH / (double) HEIGHT );
 	right = get_right_local_vector();
@@ -32,6 +34,8 @@ Vec3	Camera::get_right_local_vector( void )
 
 Camera::Camera( double x, double y, double z ) : position( x, y, z ), front( 0, 1, 0 ), fov( 70 )
 {
+	midIsPress = false;
+	shiftIsPress = false; 
 	h = 2 * tan( fov / 2 * (M_PI / 180 ));
 	w = h * ( (double) WIDTH / (double) HEIGHT );
 	right = get_right_local_vector();
@@ -52,6 +56,73 @@ void	Camera::moveBackward( void )
 {
 	position = position - front;
 }
+
+bool	is_a_bad_rotation(Vec3 v_new, Vec3 v_old)
+{
+	if ((v_old._x > 0 && v_new._x < 0)
+		&& (v_old._y < 0 && v_new._y > 0) && (v_old._z > 0.99 || v_old._z < 0.01))
+		return (true);
+	if ((v_old._x < 0 && v_new._x > 0)
+		&& (v_old._y > 0 && v_new._y < 0) && (v_old._z > 0.99 || v_old._z < 0.01))
+		return (true);
+	if ((v_old._x > 0 && v_new._x > 0)
+		&& (v_old._x < 0 && v_new._y < 0) && (v_old._z > 0.99 || v_old._z < 0.01))
+		return (true);
+	if ((v_old._x > 0 && v_old._y > 0)
+		&& (v_new._x < 0 && v_new._y < 0) && (v_old._z > 0.99 || v_old._z < 0.01))
+		return (true);
+	if ((v_old._x < 0 && v_old._y < 0)
+		&& (v_new._x > 0 && v_new._y > 0) && (v_old._z > 0.99 || v_old._z < 0.01))
+		return (true);
+	return (false);
+}
+
+void	Camera::handleMouseMidButtonPress( double x, double y )
+{
+		midIsPress = true;
+		prev_x = x;
+		prev_y = y;
+}
+
+void	Camera::handleMouseMovement( double x, double y )
+{
+	double dx = prev_x - x;
+	double dy = prev_y - y;
+	Vec3 r = right;
+	Vec3 u = up;
+	double	yaw;
+	double	pitch;
+	Vec3	frontTmp;
+
+	prev_x = x;
+	prev_y = y;
+	if ( true == midIsPress)
+	{
+		if (true == shiftIsPress)
+		{
+			yaw = dx * -0.002;
+			pitch = dy * -0.002;
+			frontTmp = front;
+			front = Vec3::vecRotate(front, Vec3(0, 0, 1), -yaw);
+			right = get_right_local_vector();
+			up = get_up_local_vector();
+			front = Vec3::vecRotate(front, right, -pitch);
+			front.normalize();
+			right = get_right_local_vector();
+			up = get_up_local_vector();
+			if (is_a_bad_rotation(front, frontTmp))
+				front = frontTmp;
+		}
+		else
+		{
+
+			position = position + r * ( dx * 0.1 ) + u * ( -dy * 0.1 );
+		}
+	}
+}
+
+// void	Camera::midMouseButtonPress();
+// void	Camera::midMouseButtonRelease();
 
 Camera::~Camera()
 {

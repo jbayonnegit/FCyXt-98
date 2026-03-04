@@ -15,6 +15,7 @@ class Vec3
 		Vec3 &operator*(const Vec3 &other);
 		Vec3 &operator/(const Vec3 &other);
 
+
 		~Vec3();
 
 		static double	dot( const Vec3 &a, const Vec3 &b )
@@ -34,7 +35,25 @@ class Vec3
 			return ( Vec3( a._x * scalar, a._y * scalar, a._z * scalar) );
 		}
 
+		static Vec3 vecRotate(Vec3 v, Vec3 axis, double angle)
+		{
+			Vec3	res;
+			double	c, s, dot;
+		
+			c = cos(angle);
+			s = sin(angle);
+			dot = Vec3::dot(axis, v);
+			res._x = v._x * c + (axis._y * v._z - axis._z * v._y)
+				* s + axis._x * dot * (1 - c);
+			res._y = v._y * c + (axis._z * v._x - axis._x * v._z)
+				* s + axis._y * dot * (1 - c);
+			res._z = v._z * c + (axis._x * v._y - axis._y * v._x)
+				* s + axis._z * dot * (1 - c);
+			return (res);
+		}
+
 		void	normalize( void );
+
 };
 std::ostream	&operator<<( std::ostream &stream, Vec3 &vec);
  

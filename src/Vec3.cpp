@@ -97,8 +97,11 @@ void	Vec3::normalize( void )
 	_z /= norme;
 }
 
+
+
 std::ostream	&operator<<( std::ostream &stream, Vec3 &vec)
 {
 		stream << "x : " << vec._x << " y: " <<  vec._y << " z: "  <<  vec._z;
 		return ( stream );
 }
+

@@ -118,22 +118,40 @@ bool	App::runCircle(void)
 		{
 			if ( SDL_QUIT == e.type )
 				running = false;
-			if (e.type == SDL_MOUSEWHEEL)
+			if ( e.type == SDL_MOUSEWHEEL )
 			{
-				if (e.wheel.y < 0)
+				if ( e.wheel.y < 0 )
 					camera.moveBackward();
-				else if (e.wheel.y > 0)
+				else if ( e.wheel.y > 0 )
 					camera.moveForward();
-
+			
 			}
-			// if ( e.type == SDL_KEYDOWN )
-			// {
-			// 	if ( e.key.keysym.sym == 0x006d )
-			// 	{
-			// 		camera.moveForward();
-			// 	}
-			// }
-		}		
+			if ( e.type == SDL_KEYUP)
+			{
+				if (e.key.keysym.sym == 1073742049)
+					camera.shiftIsPress = false; 
+			}
+			if ( e.type == SDL_KEYDOWN)
+			{
+				if (e.key.keysym.sym == 1073742049)
+					camera.shiftIsPress = true;
+			}
+			if ( e.type == SDL_MOUSEBUTTONDOWN )
+			{
+				if (e.button.button == 2)
+					camera.handleMouseMidButtonPress( e.button.x, e.button.y );
+			}
+			else if ( e.type == SDL_MOUSEBUTTONUP )
+			{
+				if (e.button.button == 2)
+					camera.midIsPress = false;
+			}
+
+			if ( e.type == SDL_MOUSEMOTION )
+			{
+				camera.handleMouseMovement( e.button.x, e.button.y );
+			}
+		}
 
 		
 		glUniform3d( cam_pos, camera.position._x , camera.position._y , camera.position._z );
@@ -144,7 +162,7 @@ bool	App::runCircle(void)
 		glUniform2d( ScreenResolution, WIDTH, HEIGHT);
 
 		_fractal.drawShape( _win );
-		SDL_Delay(20);
+		//SDL_Delay(20);
 		
 
 	}
