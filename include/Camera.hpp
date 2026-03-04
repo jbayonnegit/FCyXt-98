@@ -23,4 +23,6 @@ class Camera
 		Camera();
 		Camera(double x, double y, double z);
 		~Camera();
+		void	moveForward( void );
+		void	moveBackward( void );
 };

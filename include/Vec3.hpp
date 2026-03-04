@@ -11,6 +11,7 @@ class Vec3
 		Vec3 &operator=(const Vec3 &other);
 		Vec3 &operator+(const Vec3 &other);
 		Vec3 &operator-(const Vec3 &other);
+		Vec3 &operator*(const double &other);
 		Vec3 &operator*(const Vec3 &other);
 		Vec3 &operator/(const Vec3 &other);
 

@@ -90,7 +90,7 @@ bool	App::runMandelbrot( void )
 		glUniform1d( offsetX, osX );
 		glUniform1d( offsetY, osY );
 		_fractal.drawShape( _win );
-		SDL_Delay( 20 );
+	//	SDL_Delay( 20 );
  	}
 	return true;
 }
@@ -103,15 +103,38 @@ bool	App::runCircle(void)
 
 	Camera	camera(1.45,-30,0);
 
+
+	GLuint cam_pos	= glGetUniformLocation( _program.getId(), "cam_pos" );
+	GLuint cam_dir	= glGetUniformLocation( _program.getId(), "forward" );
+	GLuint right	= glGetUniformLocation( _program.getId(), "right" );
+	GLuint up		= glGetUniformLocation( _program.getId(), "up" );
+	GLuint ViewportResolution	= glGetUniformLocation( _program.getId(), "resolution" );
+	GLuint ScreenResolution	= glGetUniformLocation( _program.getId(), "ScreenResolution" );
+
 	while (running)
 	{
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		while ( SDL_PollEvent(&e) )
+		{
+			if ( SDL_QUIT == e.type )
+				running = false;
+			if (e.type == SDL_MOUSEWHEEL)
+			{
+				if (e.wheel.y < 0)
+					camera.moveBackward();
+				else if (e.wheel.y > 0)
+					camera.moveForward();
 
-		GLuint cam_pos	= glGetUniformLocation( _program.getId(), "cam_pos" );
-		GLuint cam_dir	= glGetUniformLocation( _program.getId(), "forward" );
-		GLuint right	= glGetUniformLocation( _program.getId(), "right" );
-		GLuint up		= glGetUniformLocation( _program.getId(), "up" );
-		GLuint ViewportResolution	= glGetUniformLocation( _program.getId(), "resolution" );
-		GLuint ScreenResolution	= glGetUniformLocation( _program.getId(), "ScreenResolution" );
+			}
+			// if ( e.type == SDL_KEYDOWN )
+			// {
+			// 	if ( e.key.keysym.sym == 0x006d )
+			// 	{
+			// 		camera.moveForward();
+			// 	}
+			// }
+		}		
+
 		
 		glUniform3d( cam_pos, camera.position._x , camera.position._y , camera.position._z );
 		glUniform3d( cam_dir, camera.front._x , camera.front._y , camera.front._z );
@@ -120,13 +143,10 @@ bool	App::runCircle(void)
 		glUniform2d( ViewportResolution, camera.w, camera.h);
 		glUniform2d( ScreenResolution, WIDTH, HEIGHT);
 
-		while ( SDL_PollEvent(&e) )
-		{
-			if ( SDL_QUIT == e.type )
-				running = false;
-		}
 		_fractal.drawShape( _win );
-		SDL_Delay( 20 );
+		SDL_Delay(20);
+		
+
 	}
 	return ( true );
 }

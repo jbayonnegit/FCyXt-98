@@ -30,4 +30,5 @@ void    Fractal::drawShape( Window &win )
     glBindVertexArray( VAO );
 	glDrawArrays( GL_TRIANGLES, 0, 6 );
 	SDL_GL_SwapWindow( win.getWinPtr() );
+    glBindVertexArray( 0 );
 }

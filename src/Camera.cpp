@@ -18,7 +18,6 @@ Vec3	Camera::get_up_local_vector( void )
 	return ( up );
 }
 
-
 Vec3	Camera::get_right_local_vector( void )
 {
 	Vec3	right;
@@ -31,7 +30,6 @@ Vec3	Camera::get_right_local_vector( void )
 	return ( right );  
 }
 
-
 Camera::Camera( double x, double y, double z ) : position( x, y, z ), front( 0, 1, 0 ), fov( 70 )
 {
 	h = 2 * tan( fov / 2 * (M_PI / 180 ));
@@ -43,6 +41,16 @@ Camera::Camera( double x, double y, double z ) : position( x, y, z ), front( 0, 
 	std::cout << " front : " << front << std::endl;
 	std::cout << " cam_pos : " << position << std::endl;
 	std::cout << "[ ViewportResolution ] w : " << w << " h : " << h << std::endl; 
+}
+
+void	Camera::moveForward( void )
+{
+	position = position + front;
+}
+
+void	Camera::moveBackward( void )
+{
+	position = position - front;
 }
 
 Camera::~Camera()

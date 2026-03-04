@@ -49,35 +49,17 @@ double	SdSphere(dvec3 p, double r)
 double sdBox( dvec3 p, dvec3 b )
 {
 
-	//p = p - dvec3(10.0, 0.0, 0.0);
+	p = p - dvec3(10.0, 0.0, 0.0);
   dvec3 q = abs(p) - b;
   return length(max(q,0.0)) + min(max(q.x,max(q.y,q.z)),0.0);
 }
 
-double sdPyramid( dvec3 p, double h )
-{
-  double m2 = h*h + 0.25;
-    
-  p.xz = abs(p.xz);
-  p.xz = (p.z>p.x) ? p.zx : p.xz;
-  p.xz -= 0.5;
-
-  dvec3 q = dvec3( p.z, h*p.y - 0.5*p.x, h*p.x + 0.5*p.y);
-  double s = max(-q.x,0.0);
-  double t = clamp( (q.y-0.5*p.z)/(m2+0.25), 0.0, 1.0 );
-  double a = m2*(q.x+s)*(q.x+s) + q.y*q.y;
-  double b = m2*(q.x+0.5*t)*(q.x+0.5*t) + (q.y-m2*t)*(q.y-m2*t);
-    
-  double d2 = min(q.y,-q.x*m2-q.y*0.5) > 0.0 ? 0.0 : min(a,b);
-  return sqrt( (d2+q.z*q.z)/m2 ) * sign(max(q.z,-p.y));
-}
 
 double	mapScene(dvec3 p)
 {
 	double	sphere = SdSphere(p ,2);
 	double	box = sdBox(p, dvec3(1,1,1));
-
-	return (box);
+	return (min(sphere, box));
 }
 
 dvec3 getNormal(dvec3 p)
@@ -103,7 +85,7 @@ void main ()
 
 	ray = get_first_ray_direction();
 	d = mapScene(point);
-	while (d > 0.1)
+	while (d > 0.001)
 	{
 		d = mapScene(point);
 		point += d * ray;
@@ -111,9 +93,9 @@ void main ()
 			break ;
 	}
 	n = getNormal(point);
-	light_angle = dot( n, normalize( point - dvec3(10, 10, 10) ));
-	if (d <= 0.1)
+	light_angle = dot( n, normalize(dvec3(-100, -100, -200) - point ));
+	if (d <= 0.001)
 		FragColor = vec4(1.0 * light_angle, 0, 0, 1);
 	else
-		FragColor = vec4(0, 0.2, 0, 1);
+		FragColor = vec4(0, 0.002, 0, 1);
 }
