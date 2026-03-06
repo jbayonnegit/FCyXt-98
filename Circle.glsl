@@ -85,7 +85,7 @@ void main ()
 
 	ray = get_first_ray_direction();
 	d = mapScene(point);
-	while (d > 1)
+	while (d > 0.01)
 	{
 		d = mapScene(point);
 		point += d * ray;
@@ -94,7 +94,7 @@ void main ()
 	}
 	n = getNormal(point);
 	light_angle = dot( n, normalize(dvec3(-100, -100, -200) - point ));
-	if (d <= 1)
+	if (d <= 0.01)
 		FragColor = vec4(1.0 * light_angle, 0, 0, 1);
 	else
 		FragColor = vec4(0, 0.002, 0, 1);
