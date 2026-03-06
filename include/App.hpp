@@ -4,7 +4,7 @@
 # include <string> // std::string
 # include <glad.h> // gl_X
 # include <SDL2/SDL.h> // SDL_X
-
+# include <chrono> // chrono
 # include "Fractal.hpp"
 # include "Window.hpp"
 # include "Program.hpp"

@@ -99,12 +99,21 @@ bool	App::runCircle(void)
 {
 	bool running = true;
 	SDL_Event		e;
-
-
+	Vec3		sphere(-30, 0, 0);
+	Vec3		cube(-5, 7, -10);
+	double		i = 1;
+	double		ratio = 1;
+	double		angle = 0;
 	Camera	camera(1.45,-30,0);
 
+	auto last = std::chrono::high_resolution_clock::now();
+    int frameCount = 0;
+    double fpsTimer = 0.0;
+    double currentFPS = 0.0;
 
 	GLuint cam_pos	= glGetUniformLocation( _program.getId(), "cam_pos" );
+	GLuint spherePos	= glGetUniformLocation( _program.getId(), "spherePos" );
+	GLuint cubePos	= glGetUniformLocation( _program.getId(), "cubePos" );
 	GLuint cam_dir	= glGetUniformLocation( _program.getId(), "forward" );
 	GLuint right	= glGetUniformLocation( _program.getId(), "right" );
 	GLuint up		= glGetUniformLocation( _program.getId(), "up" );
@@ -113,7 +122,33 @@ bool	App::runCircle(void)
 
 	while (running)
 	{
+		auto now = std::chrono::high_resolution_clock::now();
+        double dt = std::chrono::duration<double>(now - last).count();
+        last = now;
+
+        // FPS counter
+        frameCount++;
+        fpsTimer += dt;
+        if (fpsTimer >= 1.0)
+        {
+            currentFPS = frameCount / fpsTimer;
+            std::cout << "\r[FPS: " << (int)currentFPS << "]          " << std::flush;
+            frameCount = 0;
+            fpsTimer = 0.0;
+        }
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		
+		cube._x = 15.0 * cos(angle * 0.5 );
+		cube._y = 15.0 * sin(angle * 0.5 );
+		cube._z += i * 0.5;
+		if ( cube._z <= -10)
+			i = 1;
+		else if ( cube._z >= 10 )
+			i = -1;
+		sphere._x = 10.0 * cos(angle);
+		sphere._y = 10.0 * sin(angle);
+		angle += 0.07;
+		
 		while ( SDL_PollEvent(&e) )
 		{
 			if ( SDL_QUIT == e.type )
@@ -154,16 +189,16 @@ bool	App::runCircle(void)
 		}
 
 		
-		glUniform3d( cam_pos, camera.position._x , camera.position._y , camera.position._z );
-		glUniform3d( cam_dir, camera.front._x , camera.front._y , camera.front._z );
-		glUniform3d( up , camera.up._x, camera.up._y , camera.up._z);
-		glUniform3d( right , camera.right._x, camera.right._y , camera.right._z );
-		glUniform2d( ViewportResolution, camera.w, camera.h);
-		glUniform2d( ScreenResolution, WIDTH, HEIGHT);
+		glUniform3f( cam_pos, camera.position._x , camera.position._y , camera.position._z );
+		glUniform3f( spherePos, sphere._x , sphere._y , sphere._z );
+		glUniform3f( cubePos, cube._x , cube._y , cube._z );
+		glUniform3f( cam_dir, camera.front._x , camera.front._y , camera.front._z );
+		glUniform3f( up , camera.up._x, camera.up._y , camera.up._z);
+		glUniform3f( right , camera.right._x, camera.right._y , camera.right._z );
+		glUniform2f( ViewportResolution, camera.w, camera.h);
+		glUniform2f( ScreenResolution, WIDTH, HEIGHT);
 
 		_fractal.drawShape( _win );
-		//SDL_Delay(20);
-		
 
 	}
 	return ( true );
