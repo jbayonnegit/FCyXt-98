@@ -217,7 +217,7 @@ void main ()
 		float light0 = dot( n, normalize(vec3(-300, -20, 300) - point ));
 		float light1 = dot( n, normalize(vec3(300, -20, 300) - point ));
 		float light2 = dot( n, normalize(vec3(0, -20, -300) - point ));
-		vec4 color = /*vec4( 1.0 * light0, 0, 0, 1) +*/ vec4(0 , 0,  1 * light1, 1);// + vec4(0 , 1 * light2,  0, 1);
+		vec4 color = /*vec4( 1.0 * light0, 0, 0, 1) +*/ vec4(1 * light0 , 1 * light0,  1 * light0, 1);// + vec4(0 , 1 * light2,  0, 1);
 		FragColor = color;
 	}
 	else

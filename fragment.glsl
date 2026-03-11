@@ -15,7 +15,7 @@ const float PI = 3.141592653589793;
 dvec3 get_color(float mu)
 {
     float t = mu * 0.02;
-    vec3 col = 0.5 + 0.5 * cos(2.0 * PI * (t + vec3(0.0, 0.33, 0.67)));
+    vec3 col = 0.5 + 0.5 * cos(2.0 * PI * (t + vec3(0.5, 0.20, 0.30)));
     return dvec3(col);
 }
 
