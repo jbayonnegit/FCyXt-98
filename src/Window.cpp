@@ -34,7 +34,7 @@ void	Window::window_loading( void )
 		std::cerr << "Failed to initialize GLAD" << std::endl;
 		exit(EXIT_FAILURE);
 	}
-	SDL_GL_SetSwapInterval(0); // 0 pour désactiver Vsync = framerate illimité
+
 }
 
 SDL_Window*	Window::getWinPtr(void)

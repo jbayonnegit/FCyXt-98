@@ -70,7 +70,7 @@ bool	App::runMandelbrot( void )
 	int frameCount = 0;
 	double fpsTimer = 0.0;
 	double currentFPS = 0.0;
-	
+	SDL_GL_SetSwapInterval(0); // 0 pour désactiver Vsync = framerate illimité
 	while ( running )
 	{
 		auto now = std::chrono::high_resolution_clock::now();
@@ -258,6 +258,7 @@ bool	App::runCircle(void)
 	GLuint ViewportResolution	= glGetUniformLocation( _program.getId(), "resolution" );
 	GLuint ScreenResolution	= glGetUniformLocation( _program.getId(), "ScreenResolution" );
 
+	SDL_GL_SetSwapInterval(1); 
 	while (running)
 	{
 		auto now = std::chrono::high_resolution_clock::now();
