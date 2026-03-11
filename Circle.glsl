@@ -44,12 +44,15 @@ float opSubtraction( float a, float b )
 {
     return max(-a,b);
 }
+
+
 float	SdSphere(vec3 p, float r, vec3 pos)
 {
 	//float d = length(p) - r;
 	float d = length(p - pos) - r;
 	return (d);
 }
+
 
 float sdBox( vec3 p, vec3 b )
 {
@@ -138,11 +141,11 @@ float	mapScene(vec3 p)
 	// float	sphere0 = SdSphere(p ,10, vec3(0));
 	// float	box = sdBox(p, vec3(4,4,4));
 	//float 	mandel = mandelbulbDE(p, 22, 12);  // radius=20, spacing=100
-	//float	infiniteSp0 = infiniteSpheres(p, 20, 50);
-	float	infiniteSp1 = infiniteSpheres(p + 20, 30, 100);
+	float	infiniteSp0 = infiniteSpheres(p, 20, 50);
+	//float	infiniteSp1 = infiniteSpheres(p + 20, 30, 100);
 	//return (opSmoothUnion(infiniteSp0, infiniteSp1, 2));
-	return (infiniteSp1);
-//	return (opSmoothUnion(opSmoothUnion(sphere0, sphere1, 0.5), box, 2));
+	//	return (opSmoothUnion(opSmoothUnion(sphere0, sphere1, 0.5), box, 2));
+	return (infiniteSp0);
 }
 
 vec3 getNormal(vec3 p)
@@ -168,7 +171,6 @@ void main ()
 	vec3	point = cam_pos;
 
 	ray = get_first_ray_direction();
-	
 	// Limite d'itérations pour éviter les boucles infinies
 	int maxIterations = 256;
 	for (int iter = 0; iter < maxIterations; iter++)
@@ -184,9 +186,9 @@ void main ()
 	if (d < 0.1)
 	{
 		n = getNormal(point);
-		float light2 = dot( n, normalize(vec3(0, 2000, 300) - point ));
+		//float light2 = dot( n, normalize(vec3(0, 2000, 300) - point ));
 		float light0 = dot( n, normalize(vec3(0, 0, -1000) - point ));
-		vec4 color = vec4(1.0 * light0 , 1.0 * light2,  0, 1);
+		vec4 color = vec4(1.0 * light0 , 0,  0, 1);
 		FragColor = color;
 	}
 	else
