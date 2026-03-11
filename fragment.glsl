@@ -2,59 +2,78 @@
 #extension GL_ARB_gpu_shader_fp64 : require
 
 out vec4 FragColor;
+
 uniform dvec2 u_resolution;
 uniform double zoom;
 uniform int limit;
 uniform double offsetX;
-uniform double cr;
 uniform double offsetY;
 
-// Palette couleur rapide
-dvec3 get_color(int it)
-{
-	if (it == limit)
-		return dvec3(0.0);
+const float PI = 3.141592653589793;
 
-	float t = float(it) * 0.02;
-	vec3 col = 0.5 + 0.5 * cos(6.283185 * (t + vec3(0.0, 0.33, 0.67)));
-	return dvec3(col);
+// Smooth color palette
+dvec3 get_color(float mu)
+{
+    float t = mu * 0.02;
+    vec3 col = 0.5 + 0.5 * cos(2.0 * PI * (t + vec3(0.0, 0.33, 0.67)));
+    return dvec3(col);
 }
 
 void main()
 {
-	// Conversion coordonnées écran -> Mandelbrot
-	double x = -2.0 * 1.77777777778 + (gl_FragCoord.x * zoom + offsetX) / u_resolution.x * (4.0 * 1.77777777778);
-	double y = -2.0 + (gl_FragCoord.y * zoom + offsetY) / u_resolution.y * 4.0;
-	
-	// Initialisation
-	double zr = x;
-	double zi = y;
-	double cr_val = x;
-	double ci_val = y;
-	int it = 0;
-	
-	// Boucle Mandelbrot optimisée
-	while (it < limit)
-	{
-		// Calcul z² + c avec inline
-		double zr2 = zr * zr;
-		double zi2 = zi * zi;
-		double mag2 = zr2 + zi2;
-		
-		// Early exit si diverge
-		if (mag2 > 4.0)
-		{
-			FragColor = vec4(get_color(it), 1.0);
-			return;
-		}
-		
-		// z = z² + c
-		zi = 2.0 * zr * zi + ci_val;
-		zr = zr2 - zi2 + cr_val;
-		
-		it++;
-	}
-	
-	// Point dans l'ensemble
-	FragColor = vec4(0.0, 0.0, 0.0, 1.0);
-} 
+    // Normalized screen coordinates
+    dvec2 uv = (dvec2(gl_FragCoord.xy) / u_resolution - 0.5) * 2.0;
+
+    // Aspect ratio
+    uv.x *= 1.77777777778;
+
+    // Complex plane
+    double x = uv.x * zoom + offsetX;
+    double y = uv.y * zoom + offsetY;
+
+    // Cardioid optimization (skip interior)
+    double q = (x - 0.25)*(x - 0.25) + y*y;
+    if (q * (q + (x - 0.25)) < 0.25 * y*y)
+    {
+        FragColor = vec4(0.0,0.0,0.0,1.0);
+        return;
+    }
+
+    if ((x+1.0)*(x+1.0) + y*y < 0.0625)
+    {
+        FragColor = vec4(0.0,0.0,0.0,1.0);
+        return;
+    }
+
+    double zr = 0.0;
+    double zi = 0.0;
+
+    double zr2;
+    double zi2;
+
+    int it;
+
+    for (it = 0; it < limit; it++)
+    {
+        zr2 = zr*zr;
+        zi2 = zi*zi;
+
+        if (zr2 + zi2 > 4.0)
+            break;
+
+        zi = 2.0*zr*zi + y;
+        zr = zr2 - zi2 + x;
+    }
+
+    if (it == limit)
+    {
+        FragColor = vec4(0.0,0.0,0.0,1.0);
+        return;
+    }
+
+    // Smooth iteration
+    float mag = sqrt(float(zr2 + zi2));
+    float mu = it + 1.0 - log(log(mag)) / log(2.0);
+
+    FragColor = vec4(get_color(mu),1.0);
+}
