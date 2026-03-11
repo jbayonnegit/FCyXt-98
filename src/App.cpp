@@ -178,12 +178,28 @@ bool	App::runMandelbrot( void )
 				// Linear interpolation (t between 0 and 1)
 				double t = _zoomElapsedTime / _zoomDuration;
 				
-				// Apply easing function (ease-out cubic for smoother effect)
-				double easeT = 1.0 - (1.0 - t) * (1.0 - t) * (1.0 - t);
-				
+				// Apply custom piecewise easing:
+				double easeT;
+
+				// Piecewise easing: extremely slow at start, faster near the end
+				// - first 90% very slow (power 6) to avoid large jumps when deeply zoomed
+				// - last 10% accelerates (sqrt) to finish the animation
+				if (t < 0.9)
+				{
+					double u = t / 0.9; // normalize to [0,1]
+					// very strong easing-in (u^6) scaled to reach 0.9 at t=0.9
+					easeT = 0.9 * pow(u, 6);
+				}
+				else
+				{
+					double u = (t - 0.9) / 0.1; // normalize last 10% to [0,1]
+					// sqrt gives quicker progression in the final segment
+					easeT = 0.9 + 0.1 * pow(u, 0.5);
+				}
 				z = _zoomStart + (_zoomTarget - _zoomStart) * easeT;
 				osX = _offsetXStart + (_offsetXTarget - _offsetXStart) * easeT;
 				osY = _offsetYStart + (_offsetYTarget - _offsetYStart) * easeT;
+				
 			}
 		}
 		
