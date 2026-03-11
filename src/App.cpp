@@ -188,9 +188,10 @@ bool	App::runMandelbrot( void )
 				{
 					double u = t / 0.8; // normalize to [0,1]
 					// Make the start 10x slower: increase the easing exponent by a factor
-					const double slowFactor = 10.0; // slowdown multiplier for the start
+					const double slowFactor = 2.0; // slowdown multiplier for the start
 					// very strong easing-in (u^(6*slowFactor)) scaled to reach 0.9 at t=0.9
 					easeT = 0.8 * pow(u, 6.0 * slowFactor);
+
 				}
 				else
 				{
