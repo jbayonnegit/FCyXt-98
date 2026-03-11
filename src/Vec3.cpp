@@ -81,6 +81,15 @@ Vec3 &Vec3::operator/(const Vec3 &other)
 	return (*this);
 }
 
+Vec3 &Vec3::operator/(const double &other)
+{
+	_x /= other;
+	_y /= other;
+	_z /= other;
+	
+	return (*this);
+}
+
 Vec3::~Vec3()
 {
 

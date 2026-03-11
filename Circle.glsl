@@ -45,7 +45,11 @@ float opSubtraction( float a, float b )
     return max(-a,b);
 }
 
-
+float sdPlane( vec3 p, vec3 n, float h )
+{
+  // n must be normalized
+  return dot(p,n) + h;
+}
 
 float	SdSphere(vec3 p, float r, vec3 pos)
 {
@@ -152,10 +156,12 @@ void boxFold(inout vec3 z) {
 // La scène
 float mapScene(vec3 p)
 {
-    vec3 z = p;
+	float	sizeOfTheFractal = 1;
+
+    vec3 z = p / sizeOfTheFractal;
     vec3 offset = p;
     float dr = 1.0;
-    float scale = 2.0; // Modifie cette valeur (ex: 2.5 ou -1.5) pour changer radicalement la fractale !
+    float scale = -1.5; // Modifie cette valeur (ex: 2.5 ou -1.5) pour changer radicalement la fractale !
     
     for (int n = 0; n < 12; n++) {
         boxFold(z);
@@ -166,7 +172,8 @@ float mapScene(vec3 p)
     }
     
     float r = length(z);
-    return r / abs(dr);
+    
+	return min(r / abs(dr) * sizeOfTheFractal, sdPlane(p, vec3(0,0,1), 2));
 }
 
 vec3 getNormal(vec3 p)
@@ -199,7 +206,7 @@ void main ()
 		d = mapScene(point);
 		if (d < 0.0001)  // Convergence
 			break;
-		if (d > 500.0)  // Trop loin
+		if (d > 50000.0)  // Trop loin
 			break;
 		point += d * ray;
 	}
@@ -210,7 +217,7 @@ void main ()
 		float light0 = dot( n, normalize(vec3(-300, -20, 300) - point ));
 		float light1 = dot( n, normalize(vec3(300, -20, 300) - point ));
 		float light2 = dot( n, normalize(vec3(0, -20, -300) - point ));
-		vec4 color = vec4( 1.0 * light0, 0, 0, 1) + vec4(0 , 0,  1 * light1, 1) + vec4(0 , 1 * light2,  0, 1);
+		vec4 color = /*vec4( 1.0 * light0, 0, 0, 1) +*/ vec4(0 , 0,  1 * light1, 1);// + vec4(0 , 1 * light2,  0, 1);
 		FragColor = color;
 	}
 	else

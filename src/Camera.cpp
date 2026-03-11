@@ -49,7 +49,8 @@ Camera::Camera( double x, double y, double z ) : position( x, y, z ), front( 0, 
 
 void	Camera::moveForward( void )
 {
-	position = position + front;
+	Vec3 frontmp = front;
+	position = position + frontmp / 20;
 }
 
 void	Camera::moveBackward( void )
