@@ -56,7 +56,7 @@ bool	App::runMandelbrot( void )
 	int			f = 100;  // Réduit à 100 (au lieu de 400) pour garder les doubles et plus de FPS
 	double			osY = 0;
 	double			c = 0;
-	int				changeZoom = 0;
+	int				changeZoom = 1;
 
 	GLuint u_resolution  = glGetUniformLocation( _program.getId(), "u_resolution");
 	GLuint zoom  = glGetUniformLocation( _program.getId(), "zoom");
@@ -140,7 +140,7 @@ bool	App::runMandelbrot( void )
 					_offsetYTarget = mouseWorldY - ndcY * _zoomTarget;
 
 					// Start animation
-					changeZoom == 0;
+					changeZoom = 0;
 					_zoomDuration = 1;
 					_isZooming = true;
 					_zoomElapsedTime = 0.0;
@@ -158,7 +158,7 @@ bool	App::runMandelbrot( void )
 					_offsetYTarget = 0.0;
 					_zoomDuration = 50;
 					// Start animation
-					changeZoom == 1;
+					changeZoom = 1;
 					_isZooming = true;
 					_zoomElapsedTime = 0.0;
 				}
@@ -185,12 +185,12 @@ bool	App::runMandelbrot( void )
 
 				double t = _zoomElapsedTime / _zoomDuration;
 
-				//if (changeZoom == 0)
-				//{
-				//	easeT = 1.0 - (1.0 - t) * (1.0 - t) * (1.0 - t);
-				//}
-				//else if (changeZoom == 1)
-				//{
+				if (changeZoom == 0)
+				{
+					easeT = 1.0 - (1.0 - t) * (1.0 - t) * (1.0 - t);
+				}
+				else if (changeZoom == 1)
+				{
 					// Linear interpolation (t between 0 and 1)
 
 					// Smooth ease-in-out using a high-power curve to keep a very
@@ -205,10 +205,10 @@ bool	App::runMandelbrot( void )
 						else
 							easeT = 1.0 - 0.5 * pow(2.0 * (1.0 - t), power);
 					}
+				}
 					z = _zoomStart + (_zoomTarget - _zoomStart) * easeT;
 					osX = _offsetXStart + (_offsetXTarget - _offsetXStart) * easeT;
 					osY = _offsetYStart + (_offsetYTarget - _offsetYStart) * easeT;
-				//}
 
 			}
 		}
