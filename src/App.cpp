@@ -135,6 +135,24 @@ bool	App::runMandelbrot( void )
 					_offsetYTarget = mouseWorldY - (mouseY * _zoomTarget);
 					
 					// Start animation
+					_zoomDuration = 1;
+					_isZooming = true;
+					_zoomElapsedTime = 0.0;
+				}
+				if ( e.key.keysym.sym == 0x0062) // 'b'bnnm
+				{
+					// Store current state
+					_zoomStart = z;
+					_offsetXStart = osX;
+					_offsetYStart = osY;
+					
+					// Target: reset to original zoom
+					_zoomTarget = 1.0;
+					_offsetXTarget = 0.0;
+					_offsetYTarget = 0.0;
+					_zoomDuration = 10;
+					//zoomIsInOrIsOut = 0;
+					// Start animation
 					_isZooming = true;
 					_zoomElapsedTime = 0.0;
 				}
