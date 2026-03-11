@@ -1,4 +1,5 @@
 #include "App.hpp"
+#include <cmath>
 
 
 App::App()
@@ -10,6 +11,17 @@ App::App( const std::string name) : _name ( name )
 {
 	_fractal.makeMesh();
 	_program.runProgram( _name );
+	
+	// Initialize zoom animation variables
+	_isZooming = false;
+	_zoomElapsedTime = 0.0;
+	_zoomDuration = 1.0;
+	_zoomStart = 1.0;
+	_zoomTarget = 1.0;
+	_offsetXStart = 0.0;
+	_offsetXTarget = 0.0;
+	_offsetYStart = 0.0;
+	_offsetYTarget = 0.0;
 }
 
 
@@ -41,18 +53,41 @@ bool	App::runMandelbrot( void )
 	double z;
 	z = 1;
 	double			osX = 0;
-	int			f = 1;
+	int			f = 100;  // Réduit à 100 (au lieu de 400) pour garder les doubles et plus de FPS
 	double			osY = 0;
 	double			c = 0;
+	int				changeZoom = 1;
+
+	GLuint u_resolution  = glGetUniformLocation( _program.getId(), "u_resolution");
+	GLuint zoom  = glGetUniformLocation( _program.getId(), "zoom");
+	GLuint offsetX  = glGetUniformLocation( _program.getId(), "offsetX");
+	GLuint offsetY  = glGetUniformLocation( _program.getId(), "offsetY");
+	GLuint limit  = glGetUniformLocation( _program.getId(), "limit");
+	GLuint cr  = glGetUniformLocation( _program.getId(), "cr");
+	glUniform2d(u_resolution, WIDTH, HEIGHT);
+
+	auto last = std::chrono::high_resolution_clock::now();
+	int frameCount = 0;
+	double fpsTimer = 0.0;
+	double currentFPS = 0.0;
+	
 	while ( running )
 	{
-		GLuint u_resolution  = glGetUniformLocation( _program.getId(), "u_resolution");
-		GLuint zoom  = glGetUniformLocation( _program.getId(), "zoom");
-		GLuint offsetX  = glGetUniformLocation( _program.getId(), "offsetX");
-		GLuint offsetY  = glGetUniformLocation( _program.getId(), "offsetY");
-		GLuint limit  = glGetUniformLocation( _program.getId(), "limit");
-		GLuint cr  = glGetUniformLocation( _program.getId(), "cr");
-		glUniform2d(u_resolution, WIDTH, HEIGHT);
+		auto now = std::chrono::high_resolution_clock::now();
+		double dt = std::chrono::duration<double>(now - last).count();
+		last = now;
+		
+		// FPS counter
+		frameCount++;
+		fpsTimer += dt;
+		if (fpsTimer >= 1.0)
+		{
+			currentFPS = frameCount / fpsTimer;
+			std::cout << "\r[FPS: " << (int)currentFPS << "]          " << std::flush;
+			frameCount = 0;
+			fpsTimer = 0.0;
+		}
+
 		while ( SDL_PollEvent(&e) )
 		{
 			if ( SDL_QUIT == e.type )
@@ -63,28 +98,131 @@ bool	App::runMandelbrot( void )
 				
 				SDL_GetMouseState( &mouseX, &mouseY );
 				
-				mouseY -= HEIGHT;
-				mouseY *= -1;
+				mouseY = HEIGHT - mouseY; // convert SDL (top-left) to GL (bottom-left)
 
-				double mouseWorldXBefore = osX + (mouseX * z);
-   				double mouseWorldYBefore = osY + (mouseY * z);
+				double aspect = (double)WIDTH / (double)HEIGHT;
+				double ndcX = ((double)mouseX / (double)WIDTH - 0.5) * 2.0 * aspect;
+				double ndcY = ((double)mouseY / (double)HEIGHT - 0.5) * 2.0;
+
+				double mouseWorldXBefore = osX + ndcX * z;
+				double mouseWorldYBefore = osY + ndcY * z;
 				if (e.wheel.y < 0)
-					z *= 1.05;
+					z *= 1.15;
 				else if (e.wheel.y > 0)
-					z *= 0.95;
-				osX = mouseWorldXBefore - (mouseX * z);
-  				osY = mouseWorldYBefore - (mouseY * z);
+					z *= 0.85;
+				osX = mouseWorldXBefore - ndcX * z;
+				osY = mouseWorldYBefore - ndcY * z;
 			}
 			if ( e.type == SDL_KEYDOWN )
 			{
-				if ( e.key.keysym.sym == 0x006d)
-				{
+				if ( e.key.keysym.sym == 0x006d) // 'm'
 					f += 10;
-				}	
+				if ( e.key.keysym.sym == 0x006e) // 'n'
+				{
+					int mouseX, mouseY;
+					SDL_GetMouseState(&mouseX, &mouseY);
+					mouseY = HEIGHT - mouseY; // convert SDL to GL coordinates
+
+					// Store current state
+					_zoomStart = z;
+					_offsetXStart = osX;
+					_offsetYStart = osY;
+
+					double aspect = (double)WIDTH / (double)HEIGHT;
+					double ndcX = ((double)mouseX / (double)WIDTH - 0.5) * 2.0 * aspect;
+					double ndcY = ((double)mouseY / (double)HEIGHT - 0.5) * 2.0;
+					double mouseWorldX = osX + ndcX * z;
+					double mouseWorldY = osY + ndcY * z;
+
+					// Target: zoom in by factor of 2 centered on mouse
+					_zoomTarget = z * 0.5;
+					_offsetXTarget = mouseWorldX - ndcX * _zoomTarget;
+					_offsetYTarget = mouseWorldY - ndcY * _zoomTarget;
+
+					// Start animation
+					changeZoom = 0;
+					_zoomDuration = 1;
+					_isZooming = true;
+					_zoomElapsedTime = 0.0;
+				}
+				if ( e.key.keysym.sym == 0x0062) // 'b'bnnm
+				{
+					// Store current state
+					_zoomStart = z;
+					_offsetXStart = osX;
+					_offsetYStart = osY;
+					
+					// Target: reset to original zoom
+					_zoomTarget = 1;
+					_offsetXTarget = 0.0;
+					_offsetYTarget = 0.0;
+					_zoomDuration = 50;
+					// Start animation
+					changeZoom = 1;
+					_isZooming = true;
+					_zoomElapsedTime = 0.0;
+				}
 			}
 		}
-		c += 0.0001;
-		glUniform1i( limit, f );
+		
+		// Update smooth zoom animation
+		if (_isZooming)
+		{
+			_zoomElapsedTime += dt;
+			
+			if (_zoomElapsedTime >= _zoomDuration)
+			{
+				// Animation complete
+				z = _zoomTarget;
+				osX = _offsetXTarget;
+				osY = _offsetYTarget;
+				_isZooming = false;
+				_zoomElapsedTime = 0.0;
+			}
+			else
+			{
+				double easeT;
+
+				double t = _zoomElapsedTime / _zoomDuration;
+
+				if (changeZoom == 0)
+				{
+					easeT = 1.0 - (1.0 - t) * (1.0 - t) * (1.0 - t);
+				}
+				else if (changeZoom == 1)
+				{
+					// Linear interpolation (t between 0 and 1)
+
+					// Smooth ease-in-out using a high-power curve to keep a very
+					// slow start and fast finish but with a continuous transition.
+					const double power = 12.0; // higher -> slower start, faster end
+					if (t <= 0.0) easeT = 0.0;
+					else if (t >= 1.0) easeT = 1.0;
+					else
+					{
+						if (t < 0.5)
+							easeT = 0.5 * pow(2.0 * t, power);
+						else
+							easeT = 1.0 - 0.5 * pow(2.0 * (1.0 - t), power);
+					}
+				}
+					z = _zoomStart + (_zoomTarget - _zoomStart) * easeT;
+					osX = _offsetXStart + (_offsetXTarget - _offsetXStart) * easeT;
+					osY = _offsetYStart + (_offsetYTarget - _offsetYStart) * easeT;
+
+			}
+		}
+		
+		//c += 0.0001;
+		
+		// Limitation intelligente des itérations selon le zoom
+		// Formule: base + log(zoom) pour une augmentation progressive
+		// Reste plafonnée à 200 pour garder les FPS avec doubles
+		int dynamicLimit = (int)(100 + 30.0 * log(1.0 / z + 1.0));
+		if (dynamicLimit > 200) dynamicLimit = 200;
+		if (dynamicLimit < f) dynamicLimit = f;  // Toujours >= itérations modifiées par utilisateur
+		
+		glUniform1i( limit, dynamicLimit );
 		glUniform1d( zoom, z );
 		glUniform1d( cr, c );
 		glUniform1d( offsetX, osX );
