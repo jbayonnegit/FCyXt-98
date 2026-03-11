@@ -242,8 +242,8 @@ bool	App::runCircle(void)
 	double		i = 1;
 	double		ratio = 1;
 	double		angle = 0;
-	Camera	camera(0,-100,0);
-	camera.front = (Vec3){0,1,0};
+	Camera	camera(0,-20,0);
+
 	auto last = std::chrono::high_resolution_clock::now();
     int frameCount = 0;
     double fpsTimer = 0.0;
@@ -287,6 +287,7 @@ bool	App::runCircle(void)
 		sphere._x = 10.0 * cos(angle);
 		sphere._y = 10.0 * sin(angle);
 		angle += 0.07;
+	//	camera.moveForward();
 		
 		while ( SDL_PollEvent(&e) )
 		{

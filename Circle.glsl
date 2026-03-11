@@ -128,11 +128,45 @@ float fractalSDF(vec3 p)
     return 0.5 * log(r) * r / dr;
 }
 
-float	mapScene(vec3 p)
-{
-	float d = fractalSDF(vec3(0));
 
-	return (d);
+
+
+// Fonctions utilitaires pour la Mandelbox (à placer au-dessus de mapScene)
+void sphereFold(inout vec3 z, inout float dz) {
+    float r2 = dot(z, z);
+    if (r2 < 0.25) { 
+        float temp = 4.0;
+        z *= temp;
+        dz *= temp;
+    } else if (r2 < 1.0) { 
+        float temp = 1.0 / r2;
+        z *= temp;
+        dz *= temp;
+    }
+}
+
+void boxFold(inout vec3 z) {
+    z = clamp(z, -1.0, 1.0) * 2.0 - z;
+}
+
+// La scène
+float mapScene(vec3 p)
+{
+    vec3 z = p;
+    vec3 offset = p;
+    float dr = 1.0;
+    float scale = 2.0; // Modifie cette valeur (ex: 2.5 ou -1.5) pour changer radicalement la fractale !
+    
+    for (int n = 0; n < 12; n++) {
+        boxFold(z);
+        sphereFold(z, dr);
+        
+        z = scale * z + offset;
+        dr = dr * abs(scale) + 1.0;
+    }
+    
+    float r = length(z);
+    return r / abs(dr);
 }
 
 vec3 getNormal(vec3 p)
@@ -163,24 +197,22 @@ void main ()
 	for (int iter = 0; iter < maxIterations; iter++)
 	{
 		d = mapScene(point);
-		if (d < 0.01)  // Convergence
-			break ;
+		if (d < 0.0001)  // Convergence
+			break;
 		if (d > 500.0)  // Trop loin
 			break;
 		point += d * ray;
 	}
 	// Calcule la normale seulement si on a trouvé un objet
-	if (d < 0.1)
+	if (d <= 1)
 	{
 		n = getNormal(point);
-		float light2 = dot( n, normalize(vec3(0, 2000, 300) - point ));
-		float light0 = dot( n, normalize(vec3(0, 0, -1000) - point ));
-		vec4 color = vec4(1.0 * light0 , 0,  1 * light2, 1);
+		float light0 = dot( n, normalize(vec3(-300, -20, 300) - point ));
+		float light1 = dot( n, normalize(vec3(300, -20, 300) - point ));
+		float light2 = dot( n, normalize(vec3(0, -20, -300) - point ));
+		vec4 color = vec4( 1.0 * light0, 0, 0, 1) + vec4(0 , 0,  1 * light1, 1) + vec4(0 , 1 * light2,  0, 1);
 		FragColor = color;
 	}
 	else
-	{
-		// Pixel du ciel (pas d'objet trouvé)
 		FragColor = vec4(0, 0.002, 0, 1);
-	}
 }
