@@ -46,6 +46,7 @@ float opSubtraction( float a, float b )
 }
 
 
+
 float	SdSphere(vec3 p, float r, vec3 pos)
 {
 	//float d = length(p) - r;
@@ -85,67 +86,53 @@ float	infiniteSpheresPlane( vec3 p, float sphereRadius, float spacing )
 	pos.y = mod(pos.y + spacing / 2.0, spacing) - spacing / 2.0;
 	return length(pos) - sphereRadius;
 }
-
-
-// Mandelbulb - 3D Mandelbrot Set
-// Distance estimation using ray marching
-
-// Power function for Mandelbulb
-vec3 powN(vec3 z, float n) {
-    float r = length(z);
-    if (r < 0.0001) return vec3(0.0);
-    
-    float theta = acos(z.z / r);
-    float phi = atan(z.y, z.x);
-    
-    float rn = pow(r, n);
-    float ntheta = theta * n;
-    float nphi = phi * n;
-    
-    return rn * vec3(
-        sin(ntheta) * cos(nphi),
-        sin(ntheta) * sin(nphi),
-        cos(ntheta)
-    );
-}
-
-// Distance estimation for Mandelbulb
-float mandelbulbDE(vec3 pos, float power, int maxIterations) {
-    vec3 z = pos;
+// Fonction de distance pour un Mandelbulb
+float fractalSDF(vec3 p)
+{
+    vec3 z = p;
     float dr = 1.0;
     float r = 0.0;
     
-    // Reduced loop limit for better performance
-    for (int i = 0; i < 20; i++) {
-        if (i >= maxIterations) break;
+    // La puissance de la fractale (8.0 est la valeur classique)
+    // Tu peux essayer de l'animer avec le temps (ex: 8.0 + sin(time) * 2.0)
+    float Power = 8.0; 
+    
+    // Nombre d'itérations de la fractale
+    int iterations = 10; 
+
+    for (int i = 0; i < iterations; i++)
+    {
         r = length(z);
-        if (r > 4.0) break;
+        if (r > 2.0) break; // Bailout (limite d'échappement)
+
+        // Conversion en coordonnées polaires
+        float theta = acos(z.z / r);
+        float phi = atan(z.y, z.x);
         
-        // Calculate derivative for distance estimation
-        dr = pow(r, power - 1.0) * power * dr + 1.0;
+        // Calcul de la dérivée pour l'estimation de distance (Distance Estimator)
+        dr = pow(r, Power - 1.0) * Power * dr + 1.0;
+
+        // Mise à l'échelle et rotation
+        float zr = pow(r, Power);
+        theta = theta * Power;
+        phi = phi * Power;
+
+        // Retour aux coordonnées cartésiennes
+        z = zr * vec3(sin(theta) * cos(phi), sin(phi) * sin(theta), cos(theta));
         
-        // Mandelbulb iteration
-        z = powN(z, power) + pos;
+        // Ajout de la position d'origine
+        z += p;
     }
     
-    // Distance estimate: |z| * log(|z|) / |z'|
+    // Formule d'estimation de distance pour le Mandelbulb
     return 0.5 * log(r) * r / dr;
 }
 
-
-
-
 float	mapScene(vec3 p)
 {
-	// float	sphere1 = SdSphere(p ,5, spherePos);
-	// float	sphere0 = SdSphere(p ,10, vec3(0));
-	// float	box = sdBox(p, vec3(4,4,4));
-	//float 	mandel = mandelbulbDE(p, 22, 12);  // radius=20, spacing=100
-	float	infiniteSp0 = infiniteSpheres(p, 20, 50);
-	//float	infiniteSp1 = infiniteSpheres(p + 20, 30, 100);
-	//return (opSmoothUnion(infiniteSp0, infiniteSp1, 2));
-	//	return (opSmoothUnion(opSmoothUnion(sphere0, sphere1, 0.5), box, 2));
-	return (infiniteSp0);
+	float d = fractalSDF(vec3(0));
+
+	return (d);
 }
 
 vec3 getNormal(vec3 p)
@@ -177,7 +164,7 @@ void main ()
 	{
 		d = mapScene(point);
 		if (d < 0.01)  // Convergence
-			break;
+			break ;
 		if (d > 500.0)  // Trop loin
 			break;
 		point += d * ray;
@@ -186,9 +173,9 @@ void main ()
 	if (d < 0.1)
 	{
 		n = getNormal(point);
-		//float light2 = dot( n, normalize(vec3(0, 2000, 300) - point ));
+		float light2 = dot( n, normalize(vec3(0, 2000, 300) - point ));
 		float light0 = dot( n, normalize(vec3(0, 0, -1000) - point ));
-		vec4 color = vec4(1.0 * light0 , 0,  0, 1);
+		vec4 color = vec4(1.0 * light0 , 0,  1 * light2, 1);
 		FragColor = color;
 	}
 	else
