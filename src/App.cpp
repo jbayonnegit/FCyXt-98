@@ -150,7 +150,7 @@ bool	App::runMandelbrot( void )
 					_zoomTarget = 1.0;
 					_offsetXTarget = 0.0;
 					_offsetYTarget = 0.0;
-					_zoomDuration = 10;
+					_zoomDuration = 25;
 					//zoomIsInOrIsOut = 0;
 					// Start animation
 					_isZooming = true;
@@ -184,17 +184,19 @@ bool	App::runMandelbrot( void )
 				// Piecewise easing: extremely slow at start, faster near the end
 				// - first 90% very slow (power 6) to avoid large jumps when deeply zoomed
 				// - last 10% accelerates (sqrt) to finish the animation
-				if (t < 0.9)
+				if (t < 0.8)
 				{
-					double u = t / 0.9; // normalize to [0,1]
-					// very strong easing-in (u^6) scaled to reach 0.9 at t=0.9
-					easeT = 0.9 * pow(u, 6);
+					double u = t / 0.8; // normalize to [0,1]
+					// Make the start 10x slower: increase the easing exponent by a factor
+					const double slowFactor = 10.0; // slowdown multiplier for the start
+					// very strong easing-in (u^(6*slowFactor)) scaled to reach 0.9 at t=0.9
+					easeT = 0.8 * pow(u, 6.0 * slowFactor);
 				}
 				else
 				{
-					double u = (t - 0.9) / 0.1; // normalize last 10% to [0,1]
+					double u = (t - 0.8) / 0.2; // normalize last 10% to [0,1]
 					// sqrt gives quicker progression in the final segment
-					easeT = 0.9 + 0.1 * pow(u, 0.5);
+					easeT = 0.8 + 0.1 * pow(u, 0.5);
 				}
 				z = _zoomStart + (_zoomTarget - _zoomStart) * easeT;
 				osX = _offsetXStart + (_offsetXTarget - _offsetXStart) * easeT;
@@ -203,7 +205,7 @@ bool	App::runMandelbrot( void )
 			}
 		}
 		
-		c += 0.0001;
+		//c += 0.0001;
 		
 		// Limitation intelligente des itérations selon le zoom
 		// Formule: base + log(zoom) pour une augmentation progressive
