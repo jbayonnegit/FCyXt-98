@@ -109,21 +109,35 @@ void boxFold(inout vec3 z) {
 	z = clamp(z, -1.0, 1.0) * 2.0 - z;
 }
 
+// Calcule l'angle en degrés entre deux vecteurs
+float getAngleDegrees(vec3 v1, vec3 v2) {
+	// On normalise les vecteurs et on limite le produit scalaire entre -1.0 et 1.0
+	// pour éviter les erreurs NaN avec acos dues aux imprécisions flottantes.
+	return degrees(acos(clamp(dot(normalize(v1), normalize(v2)), -1.0, 1.0)));
+}
+
+// Rapporte la taille d'un vecteur entre 0.0 et 1.0 en fonction d'une taille maximale
+float convertRange(vec3 v, float maxLength) {
+	// Simple produit en croix pour obtenir la proportion
+	return length(v) / maxLength;
+}
+
 // La scène
 float mapScene(vec3 p)
 {
-	// Répétition infinie sur le plan XY
+	// Répétition infinie sur les axes XYZ
 	float spacing = 10.0;
 	vec3 q = p;
 	q.x = mod(q.x + spacing / 2.0, spacing) - spacing / 2.0;
 	q.y = mod(q.y + spacing / 2.0, spacing) - spacing / 2.0;
+	q.z = mod(q.z + spacing / 2.0, spacing) - spacing / 2.0;
 
-	float	sizeOfTheFractal = 1;
+	float	sizeOfTheFractal = 1.0;
 
 	vec3 z = q / sizeOfTheFractal;
 	vec3 offset = q;
 	float dr = 1.0;
-	float scale = 1.4; // Modifie cette valeur (ex: 2.5 ou -1.5) pour changer radicalement la fractale !
+	float scale = 2.5; // Modifie cette valeur (ex: 2.5 ou -1.5) pour changer radicalement la fractale !
 	
 	for (int n = 0; n < 12; n++) {
 		boxFold(z);
@@ -135,7 +149,8 @@ float mapScene(vec3 p)
 	
 	float r = length(z);
 	
-	return opSmoothUnion(r / abs(dr) * sizeOfTheFractal, sdPlane(p, vec3(0,0,1), 0.2), 0.23);
+	// On retourne juste la distance à la fractale (le plan masquerait les fractales du bas)
+	return r / abs(dr) * sizeOfTheFractal;
 }
 
 vec3 getNormal(vec3 p)
@@ -167,7 +182,7 @@ s_res   is_Intersect( vec3 ray_dir, vec3 origin)
 	for (int iter = 0; iter < maxIterations; iter++)
 	{
 		d = mapScene(point);
-		if (d <= 0.01)  // Convergence
+		if (d <= 0.001)  // Convergence
 			break;
 		if (d > 5000)  // Trop loin
 			break;
@@ -178,37 +193,84 @@ s_res   is_Intersect( vec3 ray_dir, vec3 origin)
 	return (result);
 }
 
-bool    isHardShadow( vec3 ray, vec3 origin )
+// --- Ambient Occlusion ---
+float calcAO(vec3 pos, vec3 nor)
 {
-	s_res result_hard = is_Intersect( ray, origin );
-	if ( result_hard.d <= 0.01 )
-		return ( true );
-	else
-		return ( false );
+	float occ = 0.0;
+	float sca = 1.0;
+	for(int i = 0; i < 5; i++)
+	{
+		float h = 0.01 + 0.15 * float(i) / 4.0;
+		float d = mapScene(pos + h * nor);
+		occ += (h - d) * sca;
+		sca *= 0.95;
+	}
+	return clamp(1.0 - 3.0 * occ, 0.0, 1.0);
 }
 
+// --- Soft Shadow ---
+// ro = ray origin (point on surface + small offset normal)
+// rd = ray direction (towards light)
+// mint = minimum distance to start checking (avoid self-shadow)
+// maxt = maximum distance (e.g. distance to light)
+// k = softness factor (higher = harder shadow)
+float calcSoftShadow(vec3 ro, vec3 rd, float mint, float maxt, float k)
+{
+	float res = 1.0;
+	float t = mint;
+	for(int i = 0; i < 64 && t < maxt; i++)
+	{
+		float h = mapScene(ro + rd * t);
+		if(h < 0.001) return 0.0; // completly shadowed
+		res = min(res, k * h / t);
+		t += clamp(h, 0.01, 0.2); // adaptive step to avoid skipping tight corners
+	}
+	return clamp(res, 0.0, 1.0);
+}
 void main ()
 {
 	vec3 	ray;
 	float	d;
 	s_res result;
 	vec3	n;
+	vec4	baseAmbiant = vec4(1.0, 1.0, 1.0, 1.0) * 0.1;
 
 	ray = get_first_ray_direction();
-	result = is_Intersect( ray, cam_pos);
+	result = is_Intersect( ray, cam_pos);	
+	
 	if (result.d <=  0.01)
 	{
-		vec3    light_pos = vec3(0, 100, 20);
+		vec3    light_pos = cam_pos;
 		vec3    to_light  =  normalize( light_pos - result.point);
 		
 		n = getNormal(result.point);
-		if ( isHardShadow(to_light, result.point + n * 0.02) )
-		{
-			FragColor = vec4( 0, 0, 0, 1);
-			return;
-		}
+		
+		// 1. Ambient Occlusion appliqué à l'ambiant base
+		float ao = calcAO(result.point, n);
+		vec4 ambiant = baseAmbiant * ao;
+		
+		// 2. Soft Shadow (ombre douce) 
+		float distToLight = length(light_pos - result.point);
+		// k = 8.0 contrôle la douceur de l'ombre
+		float shadow = calcSoftShadow(result.point + n * 0.02, to_light, 0.05, distToLight, 8.0);
+		
+		// Directional Light/Flashlight sans limite d'angle (lumière globale depuis la caméra)
 		float light0 = max(0.0, dot( n, to_light));
-		vec4 color = /*vec4( 1.0 * light0, 0, 0, 1) +*/ vec4(1 * light0  , 1 * light0,  1 * light0, 1);// + vec4(0 , 1 * light2,  0, 1);
+		
+		// Calcul de la réflexion spéculaire (brillance)
+		vec3 view_dir = normalize(cam_pos - result.point);
+		vec3 reflect_dir = reflect(-to_light, n);
+		// 32.0 est la "brillance" (plus élevé = reflet plus petit et net)
+		float spec = pow(max(dot(view_dir, reflect_dir), 0.0), 32.0);
+		// On atténue un peu l'intensité spéculaire (ex: 0.5)
+		float specular = 0.5 * spec;
+		
+		// Couleur de la lumière légèrement jaune
+		vec4 lightColor = vec4(1.0, 0.95, 0.8, 1.0);
+		
+		// Multiplicateur Shadow sur la lumière directe + spéculaire + ambiant
+		vec4 directDiffuse = lightColor * (convertRange(to_light, 2.0));
+		vec4 color = (directDiffuse * light0 + vec4(specular)) * shadow + ambiant;
 		FragColor = color;
 	}
 	else
