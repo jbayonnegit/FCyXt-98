@@ -90,50 +90,6 @@ float	infiniteSpheresPlane( vec3 p, float sphereRadius, float spacing )
 	pos.y = mod(pos.y + spacing / 2.0, spacing) - spacing / 2.0;
 	return length(pos) - sphereRadius;
 }
-// Fonction de distance pour un Mandelbulb
-float fractalSDF(vec3 p)
-{
-	vec3 z = p;
-	float dr = 1.0;
-	float r = 0.0;
-	
-	// La puissance de la fractale (8.0 est la valeur classique)
-	// Tu peux essayer de l'animer avec le temps (ex: 8.0 + sin(time) * 2.0)
-	float Power = 8.0; 
-	
-	// Nombre d'itérations de la fractale
-	int iterations = 10; 
-
-	for (int i = 0; i < iterations; i++)
-	{
-		r = length(z);
-		if (r > 2.0) break; // Bailout (limite d'échappement)
-
-		// Conversion en coordonnées polaires
-		float theta = acos(z.z / r);
-		float phi = atan(z.y, z.x);
-		
-		// Calcul de la dérivée pour l'estimation de distance (Distance Estimator)
-		dr = pow(r, Power - 1.0) * Power * dr + 1.0;
-
-		// Mise à l'échelle et rotation
-		float zr = pow(r, Power);
-		theta = theta * Power;
-		phi = phi * Power;
-
-		// Retour aux coordonnées cartésiennes
-		z = zr * vec3(sin(theta) * cos(phi), sin(phi) * sin(theta), cos(theta));
-		
-		// Ajout de la position d'origine
-		z += p;
-	}
-	
-	// Formule d'estimation de distance pour le Mandelbulb
-	return 0.5 * log(r) * r / dr;
-}
-
-
-
 
 // Fonctions utilitaires pour la Mandelbox (à placer au-dessus de mapScene)
 void sphereFold(inout vec3 z, inout float dz) {
@@ -156,12 +112,18 @@ void boxFold(inout vec3 z) {
 // La scène
 float mapScene(vec3 p)
 {
+	// Répétition infinie sur le plan XY
+	float spacing = 10.0;
+	vec3 q = p;
+	q.x = mod(q.x + spacing / 2.0, spacing) - spacing / 2.0;
+	q.y = mod(q.y + spacing / 2.0, spacing) - spacing / 2.0;
+
 	float	sizeOfTheFractal = 1;
 
-	vec3 z = p / sizeOfTheFractal;
-	vec3 offset = p;
+	vec3 z = q / sizeOfTheFractal;
+	vec3 offset = q;
 	float dr = 1.0;
-	float scale = 2; // Modifie cette valeur (ex: 2.5 ou -1.5) pour changer radicalement la fractale !
+	float scale = 1.4; // Modifie cette valeur (ex: 2.5 ou -1.5) pour changer radicalement la fractale !
 	
 	for (int n = 0; n < 12; n++) {
 		boxFold(z);
