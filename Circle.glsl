@@ -122,9 +122,15 @@ float convertRange(vec3 v, float maxLength) {
 	return length(v) / maxLength;
 }
 
+// Variable globale pour stocker l'information de coloration (Orbit Trap)
+vec4 trap = vec4(1000.0);
+
 // La scène
 float mapScene(vec3 p)
 {
+	// Réinitialise le trap pour chaque rayon
+	trap = vec4(1000.0);
+	
 	// Répétition infinie sur les axes XYZ
 	float spacing = 10.0;
 	vec3 q = p;
@@ -145,6 +151,10 @@ float mapScene(vec3 p)
 		
 		z = scale * z + offset;
 		dr = dr * abs(scale) + 1.0;
+		
+		// Orbit Trapping : on garde la trace des distances minimales successives
+		// ça servira à donner de la couleur aux formes !
+		trap = min(trap, vec4(abs(z), length(z)));
 	}
 	
 	float r = length(z);
@@ -170,6 +180,7 @@ struct s_res
 {
 	float d;
 	vec3 point;
+	float glow; // Nouvelle propriété pour l'aura lumineuse
 };
 
 s_res   is_Intersect( vec3 ray_dir, vec3 origin)
@@ -177,19 +188,26 @@ s_res   is_Intersect( vec3 ray_dir, vec3 origin)
 	float	d;
 	vec3	point = origin;
 	s_res result;
+	float accumulatedGlow = 0.0;
 
 	int maxIterations = 600;
 	for (int iter = 0; iter < maxIterations; iter++)
 	{
 		d = mapScene(point);
+		
+		// Accumulation de Glow si on passe tout près d'une surface
+		// On ajoute plus de glow si la distance (d) est petite
+		accumulatedGlow += (0.005 / (0.01 + abs(d)));
+		
 		if (d <= 0.001)  // Convergence
 			break;
-		if (d > 5000)  // Trop loin
+		if (d > 5000.0)  // Trop loin
 			break;
 		point += d * ray_dir;
 	}
 	result.d = d;
 	result.point = point;
+	result.glow = accumulatedGlow; // On sauvegarde le glow calculé
 	return (result);
 }
 
@@ -227,23 +245,26 @@ float calcSoftShadow(vec3 ro, vec3 rd, float mint, float maxt, float k)
 	}
 	return clamp(res, 0.0, 1.0);
 }
-void main ()
-{
-	vec3 	ray;
-	float	d;
-	s_res result;
-	vec3	n;
-	vec4	baseAmbiant = vec4(1.0, 1.0, 1.0, 1.0) * 0.1;
+// Variables et fonctions retirées :
+// - palette() (couleur orbit trap)
+// - vec4 trap (calcul orbit trap dans mapScene)
 
-	ray = get_first_ray_direction();
-	result = is_Intersect( ray, cam_pos);	
+void main()
+{
+	vec4 finalColor = vec4(0.0);
+	
+	vec3 ray = get_first_ray_direction();
+	s_res result = is_Intersect(ray, cam_pos);	
+	
+	vec4 baseAmbiant = vec4(1.0, 1.0, 1.0, 1.0) * 0.1;
+	vec4 bgColor = vec4(0.0, 0.0, 0.4, 1.0); // Couleur de fond (ciel/fog)
 	
 	if (result.d <=  0.01)
 	{
 		vec3    light_pos = cam_pos;
 		vec3    to_light  =  normalize( light_pos - result.point);
 		
-		n = getNormal(result.point);
+		vec3 n = getNormal(result.point);
 		
 		// 1. Ambient Occlusion appliqué à l'ambiant base
 		float ao = calcAO(result.point, n);
@@ -271,8 +292,39 @@ void main ()
 		// Multiplicateur Shadow sur la lumière directe + spéculaire + ambiant
 		vec4 directDiffuse = lightColor * (convertRange(to_light, 2.0));
 		vec4 color = (directDiffuse * light0 + vec4(specular)) * shadow + ambiant;
-		FragColor = color;
+		
+		// 3. Brouillard de profondeur (Fog)
+		// Plus on est loin, plus le fogAmount s'approche de 1.0
+		float fogDistance = length(cam_pos - result.point);
+		// Paramètres : 10.0 (début du fog), 100.0 (fin du fog)
+		float fogAmount = smoothstep(10.0, 100.0, fogDistance);
+		
+		// Mix final entre la couleur calculée et la couleur de fond
+		finalColor = mix(color, bgColor, fogAmount);
 	}
 	else
-		FragColor = vec4(0, 0, 0.4, 1);
+	{
+		finalColor = bgColor;
+	}
+	
+	// 4. Ajout du Glow (Halo lumineux magique) par dessus l'image finale
+	vec4 glowColor = vec4(1.0, 0.8, 0.2, 1.0); // Glow orange/jaune
+	finalColor += (result.glow * 0.02) * glowColor;
+	
+	// --- POST PROCESSING ---
+	vec2 center_uv = gl_FragCoord.xy / ScreenResolution;
+	
+	// 5. Aberration Chromatique
+	vec2 fromCenter = center_uv - 0.5;
+	float distFromCenter = length(fromCenter);
+	
+	float aberrationAmount = 0.02 * distFromCenter;
+	finalColor.r *= (1.0 + aberrationAmount);
+	finalColor.b *= (1.0 - aberrationAmount);
+	
+	// 6. Vignettage
+	float vignette = smoothstep(0.8, 0.2, distFromCenter);
+	finalColor *= vignette;
+	
+	FragColor = finalColor;
 }
