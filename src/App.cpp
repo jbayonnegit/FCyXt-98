@@ -145,18 +145,29 @@ bool	App::runMandelbrot( void )
 					_isZooming = true;
 					_zoomElapsedTime = 0.0;
 				}
-				if ( e.key.keysym.sym == 0x0062) // 'b'bnnm
+				if ( e.key.keysym.sym == 0x0062) // 'b'
 				{
-					// Store current state
+					int mouseX, mouseY;
+					SDL_GetMouseState(&mouseX, &mouseY);
+					mouseY = HEIGHT - mouseY; // convert SDL to GL coordinates
+					
+					// Store current state for animation
 					_zoomStart = z;
 					_offsetXStart = osX;
 					_offsetYStart = osY;
 					
-					// Target: reset to original zoom
-					_zoomTarget = 1;
-					_offsetXTarget = 0.0;
-					_offsetYTarget = 0.0;
-					_zoomDuration = 50;
+					double aspect = (double)WIDTH / (double)HEIGHT;
+					double ndcX = ((double)mouseX / (double)WIDTH - 0.5) * 2.0 * aspect;
+					double ndcY = ((double)mouseY / (double)HEIGHT - 0.5) * 2.0;
+					double mouseWorldX = osX + ndcX * z;
+					double mouseWorldY = osY + ndcY * z;
+					
+					// Target: full zoom-out (zoom=1) but keep current focus point stable
+					_zoomTarget = 1.0;
+					_offsetXTarget = mouseWorldX - ndcX * _zoomTarget;
+					_offsetYTarget = mouseWorldY - ndcY * _zoomTarget;
+					_zoomDuration = 50; // slow, full animation
+					
 					// Start animation
 					changeZoom = 1;
 					_isZooming = true;
