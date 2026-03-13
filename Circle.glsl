@@ -143,7 +143,7 @@ float mapScene(vec3 p)
 	vec3 z = q / sizeOfTheFractal;
 	vec3 offset = q;
 	float dr = 1.0;
-	float scale = 2.5; // Modifie cette valeur (ex: 2.5 ou -1.5) pour changer radicalement la fractale !
+	float scale = 1.125; // Modifie cette valeur (ex: 2.5 ou -1.5) pour changer radicalement la fractale !
 	
 	for (int n = 0; n < 12; n++) {
 		boxFold(z);
@@ -290,7 +290,7 @@ void main()
 		vec4 lightColor = vec4(1.0, 0.95, 0.8, 1.0);
 		
 		// Multiplicateur Shadow sur la lumière directe + spéculaire + ambiant
-		vec4 directDiffuse = lightColor * (convertRange(to_light, 2.0));
+		vec4 directDiffuse = lightColor * (convertRange(to_light, 2.0));			// lumiere en fonction de la distance
 		vec4 color = (directDiffuse * light0 + vec4(specular)) * shadow + ambiant;
 		
 		// 3. Brouillard de profondeur (Fog)
@@ -308,7 +308,7 @@ void main()
 	}
 	
 	// 4. Ajout du Glow (Halo lumineux magique) par dessus l'image finale
-	vec4 glowColor = vec4(1.0, 0.8, 0.2, 1.0); // Glow orange/jaune
+	vec4 glowColor = vec4(0.2, 0.3, 0.2, 1.0); // Glow orange/jaune
 	finalColor += (result.glow * 0.02) * glowColor;
 	
 	// --- POST PROCESSING ---
